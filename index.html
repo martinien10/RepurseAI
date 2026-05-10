@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RepurseAI — 1 texte → 10 contenus en 10 secondes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#07070e;color:#fff;font-family:'DM Sans',sans-serif;overflow-x:hidden}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:3px}
+textarea:focus,input:focus{outline:none!important;border-color:#a78bfa!important;box-shadow:0 0 0 2px rgba(167,139,250,.18)!important}
+
+/* BOUTONS */
+.btn-main{background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;display:inline-block;text-align:center;text-decoration:none;padding:13px 24px;font-size:13px}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(124,58,237,.45)}
+.btn-main:active{transform:translateY(0)}
+.btn-main:disabled{opacity:.45;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-sec{background:#14141e;color:#888;border:1px solid #252535;border-radius:10px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s;padding:10px 18px;font-size:12px}
+.btn-sec:hover{background:#1c1c2c;color:#ccc;border-color:#3a3a4a}
+
+/* ANIMATIONS */
+@keyframes spin   {to{transform:rotate(360deg)}}
+@keyframes blink  {0%,100%{opacity:1}50%{opacity:0}}
+@keyframes fadeUp {from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse  {0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes floatA {0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+@keyframes floatB {0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes ticker {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes glow   {0%,100%{box-shadow:0 0 22px rgba(124,58,237,.45)}50%{box-shadow:0 0 44px rgba(124,58,237,.8),0 0 70px rgba(236,72,153,.3)}}
+
+/* PAGES */
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+/* BG animé */
+.bg-blob{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden}
+.blob1{position:absolute;top:-15%;left:-10%;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.22) 0%,transparent 65%);animation:floatA 9s ease-in-out infinite}
+.blob2{position:absolute;bottom:-15%;right:-10%;width:430px;height:430px;border-radius:50%;background:radial-gradient(circle,rgba(236,72,153,.17) 0%,transparent 65%);animation:floatB 11s ease-in-out infinite}
+.grid-bg{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.022) 1px,transparent 1px);background-size:28px 28px}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;padding:9px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,7,14,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05)}
+.logo{font-family:'Syne',sans-serif;font-weight:900;font-size:15px;background:linear-gradient(90deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* TICKER */
+.ticker-wrap{overflow:hidden;background:rgba(124,58,237,.06);border-top:1px solid rgba(124,58,237,.1);border-bottom:1px solid rgba(124,58,237,.1);padding:6px 0}
+.ticker-inner{display:flex;gap:36px;animation:ticker 32s linear infinite;white-space:nowrap;width:max-content}
+.ticker-item{font-size:10px;color:#9d78f0;font-weight:500}
+
+/* HERO */
+.hero{position:relative;z-index:1;text-align:center;padding:46px 16px 32px;max-width:640px;margin:0 auto;animation:fadeUp .65s ease both}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(24px,6vw,52px);font-weight:900;line-height:1.06;letter-spacing:-1.5px;margin-bottom:12px}
+.gradient-text{background:linear-gradient(135deg,#a78bfa,#ec4899,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200% auto;animation:shimmer 3s linear infinite}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(124,58,237,.16);border:1px solid rgba(124,58,237,.3);border-radius:30px;font-size:10px;color:#c4b5fd;margin-bottom:16px;font-weight:600}
+
+/* SECTIONS */
+.section{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:0 16px 36px}
+.section h2{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:#fff;margin-bottom:12px;text-align:center}
+
+/* PLATEFORMES */
+.platforms-scroll{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.platforms-scroll::-webkit-scrollbar{display:none}
+.plat-pill{flex:0 0 auto;border-radius:11px;padding:9px 7px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:58px;position:relative}
+.plat-pill.free{background:#14142a;border:1px solid #2a2a40}
+.plat-pill.locked{background:#0e0e18;border:1px solid #181828;opacity:.6}
+.pro-badge{position:absolute;top:3px;right:3px;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:5px;padding:1px 4px;font-size:6px;font-weight:800;color:#fff}
+.plat-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.plat-name{font-size:8px;font-weight:700;text-align:center}
+
+/* CARD */
+.card{background:#0e0e18;border:1px solid #181828;border-radius:15px;padding:16px}
+
+/* STATS */
+.stats-grid{border-radius:14px;padding:18px 10px;background:linear-gradient(135deg,#0d0d1c,#14102a);border:1px solid rgba(124,58,237,.18);display:flex;justify-content:space-around;flex-wrap:wrap;gap:8px}
+.stat-n{font-family:'Syne',sans-serif;font-size:24px;font-weight:900;background:linear-gradient(135deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-l{font-size:8px;color:#3a3a4a;margin-top:2px}
+
+/* PRICING */
+.pricing-card{border-radius:18px;padding:22px 16px;background:linear-gradient(135deg,#10101e,#18102a);border:1px solid rgba(124,58,237,.32);position:relative;overflow:hidden}
+.pricing-stripe{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#ec4899,#f97316)}
+
+/* TEMOIGNAGES */
+.testi{padding:12px 13px;border-radius:11px;background:#0e0e18;border:1px solid #181828;margin-bottom:6px}
+.testi-stars{font-size:9px;color:#f59e0b;margin-bottom:5px}
+.testi-txt{font-size:10px;color:#b0b0cc;line-height:1.65;margin-bottom:8px;font-style:italic}
+.testi-avatar{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff}
+
+/* FAQ */
+details{background:#0e0e18;border:1px solid #181828;border-radius:10px;padding:11px 13px;margin-bottom:5px}
+details summary{font-size:10px;font-weight:600;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details p{font-size:9px;color:#555;line-height:1.65;margin-top:9px}
+
+/* DÉMO TYPAGE */
+.demo-wrap{background:#0b0b14;border-radius:13px;overflow:hidden;border:1px solid #1c1c2a}
+.demo-bar{padding:8px 13px;border-bottom:1px solid #181826;display:flex;align-items:center;gap:8px;background:#080810}
+.demo-dots{display:flex;gap:5px}
+.demo-dot{width:8px;height:8px;border-radius:50%}
+.demo-content{padding:14px}
+.demo-platform{display:inline-block;padding:2px 10px;border-radius:20px;font-size:9px;font-weight:700;color:#fff;margin-bottom:10px}
+.demo-text{font-size:10px;color:#c8c8e0;line-height:1.8;white-space:pre-wrap;min-height:80px}
+.cursor{animation:blink .8s infinite;color:#a78bfa}
+
+/* APP TOOL */
+.tool-header{position:sticky;top:0;z-index:100;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;background:rgba(7,7,14,.97);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.05);gap:6px;flex-wrap:wrap}
+.pro-chip{padding:3px 9px;background:rgba(124,58,237,.14);border:1px solid rgba(124,58,237,.3);border-radius:7px;font-size:9px;font-weight:700;color:#a78bfa}
+.free-banner{padding:5px 12px;background:linear-gradient(90deg,rgba(124,58,237,.14),rgba(236,72,153,.14));border-bottom:1px solid #1a1a2a;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:5px}
+.free-banner span{font-size:9px;color:#9d78f0}
+.free-banner a{padding:2px 8px;background:rgba(124,58,237,.35);border:1px solid rgba(124,58,237,.4);border-radius:6px;font-size:8px;font-weight:700;color:#fff;text-decoration:none}
+
+/* RÉSULTATS */
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.tab-btn{padding:5px 9px;border:none;border-radius:8px;background:#0e0e18;color:#fff;font-size:9px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.tab-btn.active{outline:2px solid rgba(255,255,255,.15)}
+.result-card{background:#0e0e18;border-radius:13px;border:1px solid #181828;overflow:hidden}
+.result-header{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid #141420;flex-wrap:wrap;gap:7px}
+.result-body{padding:13px 14px;max-height:290px;overflow-y:auto}
+.result-body pre{margin:0;white-space:pre-wrap;font-size:10px;line-height:1.8;color:#b8b8d8;font-family:'DM Sans',sans-serif}
+.result-footer{display:flex;gap:5px;padding:7px 14px;background:#080810;border-top:1px solid #141420}
+
+/* PROGRESS */
+.progress-bar{height:3px;background:#141420;border-radius:99px;overflow:hidden;margin-top:11px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#ec4899,#f97316);border-radius:99px;transition:width .4s ease}
+
+/* SPINNER */
+.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:inline-block}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:999;padding:16px}
+.modal-box{background:#0e0e18;border-radius:18px;padding:32px 20px;max-width:340px;width:100%;text-align:center;border:1px solid rgba(124,58,237,.28);position:relative}
+.modal-stripe{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#7c3aed,#ec4899)}
+
+/* UPSELL */
+.upsell{border-radius:13px;padding:14px 13px;background:linear-gradient(135deg,#10101e,#180f28);border:1px solid rgba(124,58,237,.25);display:flex;align-items:center;justify-content:space-between;gap:11px;flex-wrap:wrap;margin-top:10px}
+
+/* LOCK WALL */
+.lock-wall{text-align:center;padding:20px 12px;background:#080810;border-radius:11px;border:1px dashed #1e1e2a}
+
+/* SUCCESS BANNER */
+.success-banner{display:flex;align-items:center;gap:8px;padding:10px 13px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;flex-wrap:wrap;margin-bottom:11px}
+
+/* LOGIN PAGE */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;position:relative}
+.login-box{position:relative;z-index:1;background:#0e0e18;border-radius:18px;padding:30px 20px;max-width:350px;width:100%;border:1px solid #1e1e2a}
+.process-box{background:#080810;border-radius:10px;padding:12px 13px;margin-bottom:16px;border:1px solid #141420}
+.error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:8px 11px;font-size:9px;color:#f87171;margin-bottom:9px;text-align:center;line-height:1.5}
+.ok-box{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:8px;padding:8px 11px;font-size:10px;color:#4ade80;margin-bottom:9px;text-align:center}
+.code-input{width:100%;padding:12px 13px;font-size:13px;background:#080810;border:1px solid #1e1e2a;border-radius:10px;color:#fff;text-align:center;letter-spacing:3px;text-transform:uppercase;font-family:'DM Sans',sans-serif;margin-bottom:9px}
+
+@media(max-width:400px){
+  .hero h1{font-size:22px}
+  .btn-main{font-size:12px;padding:12px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE : LANDING                                      -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-landing" class="page active">
+  <div class="bg-blob"><div class="blob1"></div><div class="blob2"></div><div class="grid-bg"></div></div>
+
+  <nav>
+    <span class="logo">⚡ RepurseAI</span>
+    <div style="display:flex;gap:6px">
+      <button class="btn-sec" onclick="showPage('login')" style="padding:5px 10px;font-size:10px">🔑 Mon code</button>
+      <button class="btn-main" onclick="showPage('app')" style="padding:5px 12px;font-size:10px">Essayer →</button>
+    </div>
+  </nav>
+
+  <div class="ticker-wrap">
+    <div class="ticker-inner" id="ticker"></div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">🔥 +2 000 créateurs · Gemini AI · Noté 4.9/5</div>
+    <h1>1 texte → <span class="gradient-text">10 contenus<br>en 10 secondes</span></h1>
+    <p style="font-size:11px;color:#555;line-height:1.75;margin-bottom:24px">
+      LinkedIn · Instagram · YouTube · Facebook · TikTok<br>
+      Twitter · Pinterest · Threads · Newsletter · WhatsApp
+    </p>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:10px">
+      <button class="btn-main" onclick="showPage('app')" style="width:100%;max-width:310px;animation:glow 2.5s ease-in-out infinite">⚡ Essai gratuit — 2 plateformes</button>
+      <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank" class="btn-main" style="width:100%;max-width:310px;background:linear-gradient(135deg,#5b21b6,#9d174d)">🚀 S'abonner — €14.99/mois</a>
+    </div>
+    <p style="font-size:9px;color:#2e2e3e">Sans carte pour l'essai · Code d'accès envoyé par Gmail après paiement</p>
+  </div>
+
+  <!-- DÉMO LIVE -->
+  <div class="section">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px">
+      <span style="padding:2px 9px;background:linear-gradient(90deg,#ff6b35,#f7c948);border-radius:20px;font-size:9px;font-weight:800;color:#000">🔥 LIVE</span>
+      <span style="font-size:10px;color:#444;font-weight:600">L'IA génère en temps réel</span>
+    </div>
+    <div class="demo-wrap">
+      <div class="demo-bar">
+        <div class="demo-dots">
+          <div class="demo-dot" style="background:#ff5f57"></div>
+          <div class="demo-dot" style="background:#febc2e"></div>
+          <div class="demo-dot" style="background:#28c840"></div>
+        </div>
+        <span style="font-size:9px;color:#3a3a4a">RepurseAI — génération live</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:5px">
+          <div style="width:5px;height:5px;border-radius:50%;background:#22c55e;animation:pulse 1.5s infinite"></div>
+          <span style="font-size:9px;color:#22c55e">IA active</span>
+        </div>
+      </div>
+      <div class="demo-content">
+        <span class="demo-platform" id="demo-platform">💼 LinkedIn</span>
+        <div class="demo-text" id="demo-text"><span class="cursor">▋</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLATEFORMES -->
+  <div class="section">
+    <h2>10 plateformes. 1 clic. Zéro effort.</h2>
+    <div class="platforms-scroll" id="platforms-landing"></div>
+  </div>
+
+  <!-- COMMENT ÇA MARCHE -->
+  <div class="section">
+    <h2>Comment ça marche ?</h2>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div class="card" style="display:flex;align-items:center;gap:11px;padding:12px 13px">
+        <span style="font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:#2a2a3a;min-width:16px">01</span>
+        <span style="font-size:20px">📝</span>
+        <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#fff;margin-bottom:2px">Colle ton texte</div><div style="font-size:9px;color:#444;line-height:1.5">Article, idée, script, présentation — n'importe quoi</div></div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:11px;padding:12px 13px">
+        <span style="font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:#2a2a3a;min-width:16px">02</span>
+        <span style="font-size:20px">⚡</span>
+        <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#fff;margin-bottom:2px">Gemini AI transforme</div><div style="font-size:9px;color:#444;line-height:1.5">L'IA la plus avancée adapte ton contenu pour chaque plateforme</div></div>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:11px;padding:12px 13px">
+        <span style="font-family:'Syne',sans-serif;font-size:10px;font-weight:800;color:#2a2a3a;min-width:16px">03</span>
+        <span style="font-size:20px">📋</span>
+        <div><div style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:#fff;margin-bottom:2px">Copie et publie</div><div style="font-size:9px;color:#444;line-height:1.5">10 contenus prêts en 10 secondes. 5h gagnées par semaine.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section">
+    <div class="stats-grid">
+      <div style="text-align:center;padding:4px 6px"><div class="stat-n">10×</div><div class="stat-l">Plus de contenu</div></div>
+      <div style="text-align:center;padding:4px 6px"><div class="stat-n">10s</div><div class="stat-l">Par génération</div></div>
+      <div style="text-align:center;padding:4px 6px"><div class="stat-n">10</div><div class="stat-l">Plateformes</div></div>
+      <div style="text-align:center;padding:4px 6px"><div class="stat-n">5h</div><div class="stat-l">Gagnées/semaine</div></div>
+    </div>
+  </div>
+
+  <!-- TÉMOIGNAGES -->
+  <div class="section">
+    <h2>Ce qu'ils en disent 🔥</h2>
+    <div class="testi"><div class="testi-stars">⭐⭐⭐⭐⭐</div><p class="testi-txt">"J'ai économisé 6h par semaine. Mon LinkedIn a explosé en 2 semaines. Indispensable !"</p><div style="display:flex;align-items:center;gap:7px"><div class="testi-avatar">M</div><div><div style="font-size:10px;font-weight:700;color:#fff">Marie L.</div><div style="font-size:8px;color:#444">Coach business</div></div></div></div>
+    <div class="testi"><div class="testi-stars">⭐⭐⭐⭐⭐</div><p class="testi-txt">"Un seul texte → 10 posts parfaitement adaptés. C'est magique. Le meilleur outil que j'ai testé."</p><div style="display:flex;align-items:center;gap:7px"><div class="testi-avatar">A</div><div><div style="font-size:10px;font-weight:700;color:#fff">Ahmed K.</div><div style="font-size:8px;color:#444">Créateur de contenu</div></div></div></div>
+    <div class="testi"><div class="testi-stars">⭐⭐⭐⭐⭐</div><p class="testi-txt">"Mon Instagram a doublé en followers en 1 mois grâce à RepurseAI. Je recommande à 100%."</p><div style="display:flex;align-items:center;gap:7px"><div class="testi-avatar">S</div><div><div style="font-size:10px;font-weight:700;color:#fff">Sonia T.</div><div style="font-size:8px;color:#444">Entrepreneuse</div></div></div></div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section">
+    <h2>Un seul forfait. Tout inclus.</h2>
+    <p style="font-size:10px;color:#444;text-align:center;margin-bottom:16px">Moins cher qu'un café par semaine ☕</p>
+    <div class="pricing-card">
+      <div class="pricing-stripe"></div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:15px;flex-wrap:wrap;gap:7px">
+        <div><div style="font-size:8px;color:#7c3aed;font-weight:700;margin-bottom:3px">✦ ACCÈS COMPLET</div><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff">RepurseAI Pro</div></div>
+        <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:900;background:linear-gradient(135deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1">€14.99</div><div style="font-size:9px;color:#444">/mois · Annulable à tout moment</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:17px">
+        <div style="font-size:10px;color:#999">✅ 10 plateformes illimitées</div>
+        <div style="font-size:10px;color:#999">✅ Générations illimitées sans limite</div>
+        <div style="font-size:10px;color:#999">✅ IA Gemini Flash — rapide et gratuit</div>
+        <div style="font-size:10px;color:#999">✅ Code d'accès unique envoyé par Gmail après paiement</div>
+        <div style="font-size:10px;color:#999">✅ Mises à jour incluses</div>
+        <div style="font-size:10px;color:#999">✅ Support prioritaire</div>
+        <div style="font-size:10px;color:#999">✅ Annulation en 1 clic</div>
+      </div>
+      <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank" class="btn-main" style="display:block;width:100%;animation:glow 2.5s ease-in-out infinite">🚀 S'abonner maintenant — €14.99/mois</a>
+      <p style="text-align:center;font-size:8px;color:#2a2a3a;margin-top:9px">🔒 Paiement sécurisé · Lemon Squeezy · Stripe · Remboursement 7 jours</p>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <h2>Questions fréquentes</h2>
+    <details><summary><span>Comment je reçois mon accès Pro ?</span><span style="color:#7c3aed;font-size:14px;flex-shrink:0">+</span></summary><p>Dès ton paiement sur Lemon Squeezy, un email est automatiquement envoyé sur ton Gmail avec ton code unique. Tu l'entres dans "Mon code" et l'accès Pro est débloqué immédiatement.</p></details>
+    <details><summary><span>Est-ce vraiment illimité ?</span><span style="color:#7c3aed;font-size:14px;flex-shrink:0">+</span></summary><p>Oui ! Avec l'abonnement Pro tu génères autant de contenus que tu veux sur les 10 plateformes, sans aucune limite.</p></details>
+    <details><summary><span>Puis-je annuler à tout moment ?</span><span style="color:#7c3aed;font-size:14px;flex-shrink:0">+</span></summary><p>Absolument. Tu peux annuler en 1 clic depuis ton espace Lemon Squeezy. Aucun engagement, aucune surprise.</p></details>
+    <details><summary><span>Quelle IA est utilisée ?</span><span style="color:#7c3aed;font-size:14px;flex-shrink:0">+</span></summary><p>RepurseAI utilise Gemini Flash de Google — un modèle IA avancé et rapide pour la génération de contenu marketing.</p></details>
+  </div>
+
+  <!-- CTA FINAL -->
+  <div style="position:relative;z-index:1;text-align:center;padding:36px 16px 55px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:clamp(18px,4vw,30px);font-weight:900;margin-bottom:7px;background:linear-gradient(135deg,#a78bfa,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Multiplie ton impact × 10</h2>
+    <p style="font-size:10px;color:#444;margin-bottom:20px">Rejoins les créateurs qui gagnent des heures chaque semaine</p>
+    <div style="display:flex;flex-direction:column;gap:7px;align-items:center">
+      <button class="btn-main" onclick="showPage('app')" style="width:100%;max-width:300px">⚡ Essai gratuit</button>
+      <button class="btn-sec" onclick="showPage('login')" style="width:100%;max-width:300px">🔑 J'ai déjà un code Pro</button>
+    </div>
+  </div>
+
+  <footer style="position:relative;z-index:1;text-align:center;padding:13px;border-top:1px solid #0f0f18;color:#222;font-size:9px">© 2026 RepurseAI · Propulsé par Gemini AI · Tous droits réservés</footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE : LOGIN                                        -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-login" class="page">
+  <div class="bg-blob"><div class="blob1"></div><div class="blob2"></div><div class="grid-bg"></div></div>
+  <div class="login-wrap">
+    <div class="login-box">
+      <button class="btn-sec" onclick="showPage('landing')" style="margin-bottom:18px;padding:4px 10px;font-size:9px">← Retour</button>
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:34px;margin-bottom:8px">🔑</div>
+        <h1 style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:5px">Accès Pro</h1>
+        <p style="font-size:10px;color:#444;line-height:1.65">Entre le code reçu par Gmail<br>après ton paiement Lemon Squeezy</p>
+      </div>
+      <div class="process-box">
+        <div style="font-size:9px;color:#3a3a5a;font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Processus d'accès :</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px"><span style="font-size:13px;flex-shrink:0">💳</span><span style="font-size:9px;color:#777;line-height:1.5">Tu paies sur Lemon Squeezy</span></div>
+        <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px"><span style="font-size:13px;flex-shrink:0">📧</span><span style="font-size:9px;color:#777;line-height:1.5">Tu reçois un code unique par Gmail automatiquement</span></div>
+        <div style="display:flex;align-items:flex-start;gap:8px"><span style="font-size:13px;flex-shrink:0">🔓</span><span style="font-size:9px;color:#777;line-height:1.5">Tu entres le code ici → accès Pro débloqué</span></div>
+      </div>
+      <input id="code-input" class="code-input" placeholder="EX : REPURSE2026" oninput="this.value=this.value.toUpperCase();clearLoginError()" onkeydown="if(event.key==='Enter')verifyCode()"/>
+      <div id="login-error" style="display:none" class="error-box"></div>
+      <div id="login-ok" style="display:none" class="ok-box">✅ Code valide ! Redirection…</div>
+      <button id="verify-btn" class="btn-main" onclick="verifyCode()" style="width:100%;margin-bottom:14px">🚀 Valider mon code</button>
+      <div style="text-align:center;font-size:9px;color:#2a2a3a;margin-bottom:8px">Pas encore abonné ?</div>
+      <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank" class="btn-main" style="display:block;width:100%;background:linear-gradient(135deg,#5b21b6,#9d174d)">💳 S'abonner €14.99/mois → recevoir son code</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- PAGE : APP TOOL                                     -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="page-app" class="page">
+  <div class="bg-blob"><div class="blob1"></div><div class="blob2"></div><div class="grid-bg"></div></div>
+
+  <div class="tool-header">
+    <button class="btn-sec" onclick="showPage('landing')" style="padding:4px 9px;font-size:9px">← Accueil</button>
+    <span class="logo" style="font-size:13px">⚡ RepurseAI</span>
+    <div id="pro-indicator">
+      <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank" class="btn-main" style="padding:4px 10px;font-size:9px">🚀 Pro €14.99</a>
+    </div>
+  </div>
+
+  <div id="free-banner" class="free-banner">
+    <span id="banner-txt">⚡ 1 génération gratuite · LinkedIn + Instagram</span>
+    <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank">Débloquer les 10</a>
+  </div>
+
+  <div style="max-width:660px;margin:0 auto;padding:15px 12px 70px;position:relative;z-index:1">
+
+    <!-- FORMULAIRE -->
+    <div id="form-section" class="card">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:12px">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-size:14px">📝</div>
+        <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#fff">Ton contenu source</div><div style="font-size:9px;color:#3a3a5a">Article, idée, script, présentation…</div></div>
+      </div>
+      <textarea id="input-text" placeholder="Colle ici ton texte… L'IA va le transformer pour toutes tes plateformes en 1 clic !" style="width:100%;padding:11px;font-size:11px;line-height:1.7;background:#080810;border:1px solid #1a1a2a;border-radius:9px;resize:vertical;color:#ccc;font-family:'DM Sans',sans-serif" rows="6" oninput="updateCharCount()"></textarea>
+      <div id="char-count" style="text-align:right;font-size:8px;margin-top:3px;margin-bottom:12px;color:#ef4444">0 car. (min. 50)</div>
+
+      <div id="form-error" style="display:none;background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.22);border-radius:8px;padding:8px 11px;font-size:9px;color:#f87171;margin-bottom:11px"></div>
+
+      <!-- Plateformes dispo -->
+      <div style="margin-bottom:14px">
+        <div id="plat-label" style="font-size:9px;color:#3a3a5a;font-weight:600;margin-bottom:6px">Essai gratuit — 2 plateformes :</div>
+        <div id="platforms-tool" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+      </div>
+
+      <!-- Bouton ou mur -->
+      <div id="generate-section">
+        <button id="gen-btn" class="btn-main" onclick="generate()" style="width:100%;padding:12px;font-size:12px;border-radius:9px">⚡ Générer — 2 plateformes (essai gratuit)</button>
+        <div id="progress-wrap" style="display:none">
+          <div class="progress-bar"><div id="progress-fill" class="progress-fill" style="width:0%"></div></div>
+          <p id="progress-label" style="text-align:center;font-size:8px;color:#3a3a5a;margin-top:5px">Analyse du contenu…</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- RÉSULTATS -->
+    <div id="results-section" style="display:none">
+      <div class="success-banner">
+        <span>🎉</span>
+        <span id="result-title" style="font-weight:600;color:#4ade80;font-size:11px">Contenus générés ! Copie et publie.</span>
+        <button onclick="resetTool()" style="margin-left:auto;padding:3px 9px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.25);border-radius:7px;font-size:9px;color:#4ade80;cursor:pointer;font-family:'DM Sans',sans-serif">↩ Nouveau</button>
+      </div>
+      <div class="tabs" id="result-tabs"></div>
+      <div class="result-card" id="result-card">
+        <div style="height:2px" id="result-stripe"></div>
+        <div class="result-header" id="result-header"></div>
+        <div class="result-body"><pre id="result-content"></pre></div>
+        <div class="result-footer">
+          <span id="result-chars" style="font-size:8px;color:#2a2a3a;background:#141420;padding:2px 7px;border-radius:20px"></span>
+          <span style="font-size:8px;color:#22c55e;background:rgba(34,197,94,.08);padding:2px 7px;border-radius:20px;font-weight:600">✅ Prêt à publier</span>
+        </div>
+      </div>
+      <div id="upsell-bar" class="upsell" style="display:none">
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="font-size:20px">🔒</span>
+          <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff">Débloquer 8 plateformes</div><div style="font-size:8px;color:#3a3a5a;margin-top:2px">YouTube · Facebook · TikTok · Twitter · Pinterest · Threads · Newsletter · WhatsApp</div></div>
+        </div>
+        <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank" class="btn-main" style="padding:8px 14px;font-size:10px;white-space:nowrap">Débloquer →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL UPGRADE -->
+<div id="modal-upgrade" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-stripe"></div>
+    <button onclick="closeModal()" class="btn-sec" style="position:absolute;top:10px;right:10px;width:26px;height:26px;padding:0;font-size:10px;border-radius:7px">✕</button>
+    <div style="font-size:32px;margin-bottom:9px">🔒</div>
+    <h2 style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:6px">Essai terminé</h2>
+    <p style="font-size:10px;color:#444;line-height:1.65;margin-bottom:18px">Abonne-toi pour des générations <strong style="color:#a78bfa">illimitées</strong> sur <strong style="color:#a78bfa">10 plateformes</strong>.</p>
+    <a href="https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82" target="_blank" class="btn-main" style="display:block;width:100%;margin-bottom:7px">🚀 S'abonner — €14.99/mois</a>
+    <button onclick="closeModal();showPage('login')" class="btn-sec" style="width:100%;padding:11px;font-size:11px;margin-bottom:10px">🔑 J'ai déjà un code Pro</button>
+    <p style="font-size:8px;color:#222">Code envoyé par Gmail · Annulation à tout moment</p>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ────────────────────────────────────────────────────────────
+const CHECKOUT = "https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82";
+
+const PLATFORMS = [
+  {id:"linkedin",  name:"LinkedIn",   grad:"linear-gradient(135deg,#0A66C2,#0d8bd9)", emoji:"💼", free:true},
+  {id:"instagram", name:"Instagram",  grad:"linear-gradient(135deg,#f09433,#dc2743,#bc1888)", emoji:"📸", free:true},
+  {id:"twitter",   name:"X/Twitter",  grad:"linear-gradient(135deg,#222,#444)", emoji:"🐦", free:false},
+  {id:"facebook",  name:"Facebook",   grad:"linear-gradient(135deg,#1877F2,#42a5f5)", emoji:"👥", free:false},
+  {id:"youtube",   name:"YouTube",    grad:"linear-gradient(135deg,#FF0000,#ff6060)", emoji:"▶️", free:false},
+  {id:"tiktok",    name:"TikTok",     grad:"linear-gradient(135deg,#010101,#69C9D0,#ee1d52)", emoji:"🎬", free:false},
+  {id:"pinterest", name:"Pinterest",  grad:"linear-gradient(135deg,#E60023,#ff6b8a)", emoji:"📌", free:false},
+  {id:"threads",   name:"Threads",    grad:"linear-gradient(135deg,#1a1a1a,#444)", emoji:"🧵", free:false},
+  {id:"newsletter",name:"Newsletter", grad:"linear-gradient(135deg,#F59E0B,#fcd34d)", emoji:"📧", free:false},
+  {id:"whatsapp",  name:"WhatsApp",   grad:"linear-gradient(135deg,#25D366,#128C7E)", emoji:"💬", free:false},
+];
+
+// ─── ÉTAT APP ──────────────────────────────────────────────────────────
+let isPro = false;
+let freeUsed = false;
+let currentResults = null;
+let currentTab = "linkedin";
+
+// ─── NAVIGATION ────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ─── TICKER ────────────────────────────────────────────────────────────
+function initTicker() {
+  const items = ["💼 Ahmed a généré 10 posts en 10s","📸 Marie a publié sur Instagram","▶️ Thomas optimise YouTube","🎬 Fatou crée ses scripts TikTok","📧 Nicolas envoie sa newsletter","💬 Sonia viralise sur WhatsApp","💼 Karim cartonne sur LinkedIn","📌 Léa domine Pinterest SEO"];
+  const all = [...items,...items];
+  document.getElementById('ticker').innerHTML = all.map(t=>`<span class="ticker-item">${t} &nbsp;·</span>`).join('');
+}
+
+// ─── DÉMO FRAPPE ───────────────────────────────────────────────────────
+const demos = [
+  {p:"💼 LinkedIn", g:"linear-gradient(90deg,#0A66C2,#0d8bd9)", t:"🚀 Ce que j'ai appris après 3 ans d'entrepreneuriat...\n\nLa plupart cherchent LA formule magique.\nMais la vérité : elle n'existe pas.\n\n✅ Ce qui fonctionne :\n→ Montrer son travail chaque jour\n→ Être utile avant d'être visible\n→ Construire avant de vendre\n\nTon tour. Qu'est-ce que tu construis ? 👇"},
+  {p:"📸 Instagram", g:"linear-gradient(90deg,#f09433,#dc2743,#bc1888)", t:"✨ La vérité sur le succès que personne ne te dit 🔥\n\nPendant 3 ans j'ai cru que c'était une question de talent.\nJe me trompais complètement.\n\nC'est une question de CONSISTANCE. 💪\n\n#entrepreneur #success #motivation #business"},
+  {p:"▶️ YouTube", g:"linear-gradient(90deg,#FF0000,#ff6060)", t:"TITRE : J'ai multiplié mon contenu × 10 en 30 jours\n\n📌 Dans cette vidéo je te révèle la méthode…\n\n⏱ TIMESTAMPS :\n00:00 – Introduction\n02:30 – La méthode RepurseAI\n08:15 – Démo live\n15:00 – Résultats après 30 jours"},
+  {p:"💬 WhatsApp", g:"linear-gradient(90deg,#25D366,#128C7E)", t:"🔥 Hey ! T'as 2 minutes ?\n\nUn seul texte → LinkedIn, Insta, YouTube, TikTok et 6 autres en 10 secondes !\n\nPartage à quelqu'un qui galère avec son contenu 👇"},
+];
+let demoLi=0,demoCi=0,demoDisp="",demoTimer=null;
+function runDemo(){
+  const cur=demos[demoLi].t;
+  document.getElementById('demo-platform').textContent=demos[demoLi].p;
+  document.getElementById('demo-platform').style.background=demos[demoLi].g;
+  if(demoCi<cur.length){
+    demoDisp=cur.slice(0,++demoCi);
+    document.getElementById('demo-text').innerHTML=demoDisp.replace(/\n/g,'<br>')+'<span class="cursor">▋</span>';
+    demoTimer=setTimeout(runDemo,11);
+  } else {
+    demoTimer=setTimeout(()=>{demoLi=(demoLi+1)%demos.length;demoCi=0;demoDisp="";runDemo();},2800);
+  }
+}
+
+// ─── PLATEFORMES ───────────────────────────────────────────────────────
+function renderPlatformsLanding(){
+  const el=document.getElementById('platforms-landing');
+  el.innerHTML=PLATFORMS.map(p=>`
+    <div class="plat-pill ${p.free?'free':'locked'}">
+      ${!p.free?'<div class="pro-badge">PRO</div>':''}
+      <div class="plat-icon" style="background:${p.grad}">${p.emoji}</div>
+      <span class="plat-name" style="color:${p.free?'#d0d0f0':'#3a3a4a'}">${p.name}</span>
+    </div>`).join('');
+}
+
+function renderPlatformsTool(){
+  const el=document.getElementById('platforms-tool');
+  el.innerHTML=PLATFORMS.map(p=>{
+    const locked=!isPro&&!p.free;
+    return `<span style="padding:2px 7px;border-radius:20px;font-size:8px;font-weight:600;background:${locked?'#0a0a12':p.grad};color:${locked?'#2a2a3a':'#fff'};border:${locked?'1px solid #181828':'none'};opacity:${locked?.5:1}">${p.emoji} ${p.name}${locked?' 🔒':''}</span>`;
+  }).join('');
+  document.getElementById('plat-label').textContent=isPro?'10 plateformes incluses :':'Essai gratuit — 2 plateformes :';
+}
+
+// ─── COMPTEUR CHARS ────────────────────────────────────────────────────
+function updateCharCount(){
+  const n=document.getElementById('input-text').value.length;
+  const el=document.getElementById('char-count');
+  el.textContent=n+' car.'+(n>0&&n<50?' (min. 50)':'');
+  el.style.color=n>=50?'#22c55e':'#ef4444';
+}
+
+// ─── VÉRIFICATION CODE ─────────────────────────────────────────────────
+async function verifyCode(){
+  const code=document.getElementById('code-input').value.trim();
+  if(!code)return;
+  const btn=document.getElementById('verify-btn');
+  btn.textContent='Vérification…';btn.disabled=true;
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('login-ok').style.display='none';
+  try{
+    // Appel backend Vercel
+    const res=await fetch('/api/verify-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+    const data=await res.json();
+    if(data.valid){
+      document.getElementById('login-ok').style.display='block';
+      setTimeout(()=>{
+        isPro=true;
+        updateProUI();
+        showPage('app');
+      },1200);
+    } else {
+      showLoginError('Code invalide ou expiré. Vérifie ton Gmail ou contacte le support.');
+    }
+  }catch{
+    showLoginError('Erreur réseau. Réessaie dans quelques secondes.');
+  }
+  btn.textContent='🚀 Valider mon code';btn.disabled=false;
+}
+
+function clearLoginError(){document.getElementById('login-error').style.display='none';}
+function showLoginError(msg){const el=document.getElementById('login-error');el.textContent='❌ '+msg;el.style.display='block';}
+
+// ─── MAJ UI PRO ────────────────────────────────────────────────────────
+function updateProUI(){
+  if(isPro){
+    document.getElementById('pro-indicator').innerHTML='<span class="pro-chip">⭐ PRO</span>';
+    document.getElementById('free-banner').style.display='none';
+    document.getElementById('gen-btn').textContent='⚡ Générer × 10 plateformes';
+    document.getElementById('upsell-bar').style.display='none';
+  }
+  renderPlatformsTool();
+}
+
+// ─── GÉNÉRATION ────────────────────────────────────────────────────────
+let progressInterval=null;
+async function generate(){
+  if(!isPro&&freeUsed){document.getElementById('modal-upgrade').style.display='flex';return;}
+  const text=document.getElementById('input-text').value.trim();
+  if(text.length<50){showFormError('Minimum 50 caractères requis.');return;}
+  clearFormError();
+
+  if(!isPro){
+    freeUsed=true;
+    document.getElementById('banner-txt').textContent='🔒 Essai utilisé — Abonne-toi pour continuer';
+    showLockWall();
+  }
+
+  // UI chargement
+  const btn=document.getElementById('gen-btn');
+  btn.innerHTML='<span class="spinner"></span> Génération en cours…';
+  btn.disabled=true;
+  document.getElementById('progress-wrap').style.display='block';
+  startProgress();
+
+  try{
+    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    const data=await res.json();
+    if(!res.ok||data.error)throw new Error(data.error||'Erreur serveur');
+    currentResults=data.content;
+    showResults();
+  }catch(e){
+    showFormError('Erreur : '+e.message);
+    btn.innerHTML=isPro?'⚡ Générer × 10 plateformes':'⚡ Générer — 2 plateformes (essai gratuit)';
+    btn.disabled=false;
+    document.getElementById('progress-wrap').style.display='none';
+    stopProgress();
+  }
+}
+
+function startProgress(){
+  let p=0;
+  const fill=document.getElementById('progress-fill');
+  const label=document.getElementById('progress-label');
+  const labels=['Analyse du contenu…','LinkedIn & Instagram…','YouTube & Facebook…','TikTok, Twitter, Pinterest…','Newsletter & WhatsApp…'];
+  progressInterval=setInterval(()=>{
+    p+=Math.random()*5.5;if(p>88)p=88;
+    fill.style.width=Math.round(p)+'%';
+    const li=p<20?0:p<45?1:p<65?2:p<82?3:4;
+    label.textContent=labels[li];
+  },260);
+}
+function stopProgress(){clearInterval(progressInterval);document.getElementById('progress-fill').style.width='100%';}
+
+function showResults(){
+  stopProgress();
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('results-section').style.display='block';
+  const avail=isPro?PLATFORMS:PLATFORMS.filter(p=>p.free);
+  document.getElementById('result-title').textContent=(isPro?'10':'2')+' contenus générés ! Copie et publie.';
+  // Onglets
+  let tabs=avail.map(p=>`<button class="tab-btn${p.id===currentTab?' active':''}" onclick="switchTab('${p.id}')" id="tab-${p.id}" style="${p.id===currentTab?'background:'+p.grad:''}">${p.emoji} ${p.name}</button>`).join('');
+  if(!isPro)tabs+=`<a href="${CHECKOUT}" target="_blank" style="padding:5px 9px;border:1px dashed rgba(124,58,237,.4);border-radius:8px;color:#7c3aed;font-size:9px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center">🔒 +8 Pro</a>`;
+  document.getElementById('result-tabs').innerHTML=tabs;
+  if(!isPro)document.getElementById('upsell-bar').style.display='flex';
+  switchTab('linkedin');
+}
+
+function switchTab(id){
+  currentTab=id;
+  const p=PLATFORMS.find(x=>x.id===id);
+  if(!p||!currentResults||!currentResults[id])return;
+  // Update tabs
+  document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('active');b.style.background='#0e0e18';});
+  const activeBtn=document.getElementById('tab-'+id);
+  if(activeBtn){activeBtn.classList.add('active');activeBtn.style.background=p.grad;}
+  // Update card
+  document.getElementById('result-stripe').style.background=p.grad;
+  document.getElementById('result-header').innerHTML=`
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:28px;height:28px;border-radius:8px;background:${p.grad};display:flex;align-items:center;justify-content:center;font-size:13px">${p.emoji}</div>
+      <div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff">${p.name}</div><div style="font-size:8px;color:#3a3a5a">${p.name}</div></div>
+    </div>
+    <button onclick="copyResult('${id}')" id="copy-btn-${id}" style="padding:5px 11px;background:${p.grad};color:#fff;border:none;border-radius:7px;font-size:9px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">📋 Copier</button>`;
+  document.getElementById('result-content').textContent=currentResults[id];
+  document.getElementById('result-chars').textContent=currentResults[id].length+' car.';
+}
+
+function copyResult(id){
+  navigator.clipboard.writeText(currentResults[id]);
+  const btn=document.getElementById('copy-btn-'+id);
+  if(btn){btn.textContent='✅ Copié !';btn.style.background='rgba(34,197,94,.15)';btn.style.border='1px solid rgba(34,197,94,.35)';setTimeout(()=>{const p=PLATFORMS.find(x=>x.id===id);btn.textContent='📋 Copier';btn.style.background=p.grad;btn.style.border='none';},2000);}
+}
+
+function showLockWall(){
+  if(!isPro&&freeUsed){
+    document.getElementById('generate-section').innerHTML=`
+      <div class="lock-wall">
+        <div style="font-size:26px;margin-bottom:5px">🔒</div>
+        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:#fff;margin-bottom:4px">Essai gratuit utilisé</div>
+        <p style="font-size:9px;color:#444;margin-bottom:13px">Abonne-toi pour des générations illimitées sur 10 plateformes</p>
+        <a href="${CHECKOUT}" target="_blank" class="btn-main" style="font-size:11px;border-radius:9px;padding:10px 22px">🚀 S'abonner — €14.99/mois</a>
+      </div>`;
+  }
+}
+
+function resetTool(){
+  currentResults=null;currentTab='linkedin';
+  document.getElementById('form-section').style.display='block';
+  document.getElementById('results-section').style.display='none';
+  document.getElementById('input-text').value='';
+  updateCharCount();
+  const btn=document.getElementById('gen-btn');
+  if(btn){btn.innerHTML=isPro?'⚡ Générer × 10 plateformes':'⚡ Générer — 2 plateformes (essai gratuit)';btn.disabled=false;}
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('progress-fill').style.width='0%';
+}
+
+function showFormError(msg){const el=document.getElementById('form-error');el.textContent=msg;el.style.display='block';}
+function clearFormError(){document.getElementById('form-error').style.display='none';}
+function closeModal(){document.getElementById('modal-upgrade').style.display='none';}
+
+// ─── INIT ──────────────────────────────────────────────────────────────
+initTicker();
+renderPlatformsLanding();
+renderPlatformsTool();
+runDemo();
+</script>
+</body>
+</html>
