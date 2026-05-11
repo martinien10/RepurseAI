@@ -1,3 +1,4 @@
+
 export default async function handler(req, res) {
 
   // ─────────────────────────────────────────────
@@ -217,10 +218,18 @@ WHATSAPP :
 
     const data = await response.json();
 
+    console.log(
+      "GEMINI DATA =",
+      JSON.stringify(data)
+    );
+
     const raw =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      data?.candidates?.[0]?.content?.parts
+        ?.map(part => part.text || "")
+        .join("") || "";
 
     if (!raw) {
+
       return res.status(500).json({
         error: "Réponse Gemini vide",
         details: data
