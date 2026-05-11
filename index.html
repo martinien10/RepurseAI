@@ -516,7 +516,6 @@ function updateCharCount(){
   el.style.color=n>=50?'#22c55e':'#ef4444';
 }
 
-// ─── VÉRIFICATION CODE ─────────────────────────────────────────────────
 async function verifyCode() {
 
   const code = document.getElementById('code-input').value.trim();
@@ -537,7 +536,6 @@ async function verifyCode() {
 
   try {
 
-    // Appel backend Vercel
     const res = await fetch('/api/verify-code', {
       method: 'POST',
       headers: {
@@ -545,11 +543,6 @@ async function verifyCode() {
       },
       body: JSON.stringify({ code })
     });
-
-    // Si le serveur répond mal
-    if (!res.ok) {
-      throw new Error('server');
-    }
 
     const data = await res.json();
 
@@ -566,36 +559,20 @@ async function verifyCode() {
 
     } else {
 
-      // Mauvais code
-      showLoginError('Code invalide ou expiré.');
+      // CODE INCORRECT
+      showLoginError(data.message || 'Code invalide.');
 
     }
 
   } catch (err) {
 
-    // Réseau / serveur
-    if (err.message === 'server') {
-      showLoginError('Serveur indisponible.');
-    } else {
-      showLoginError('Erreur réseau. Réessaie.');
-    }
+    // VRAIE erreur serveur
+    showLoginError('Serveur indisponible.');
 
   }
 
-  // Reset bouton
   btn.textContent = '🚀 Valider mon code';
   btn.disabled = false;
-}
-
-// ─── LOGIN ERRORS ─────────────────────────────────────────────────────
-function clearLoginError() {
-  document.getElementById('login-error').style.display = 'none';
-}
-
-function showLoginError(msg) {
-  const el = document.getElementById('login-error');
-  el.textContent = '❌ ' + msg;
-  el.style.display = 'block';
 }
 
 // ─── MAJ UI PRO ────────────────────────────────────────────────────────
