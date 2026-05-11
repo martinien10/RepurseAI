@@ -602,33 +602,34 @@ async function generate(){
   if(text.length<50){showFormError('Minimum 50 caractères requis.');return;}
   clearFormError();
 
-  if(!isPro){
-    freeUsed=true;
-    document.getElementById('banner-txt').textContent='🔒 Essai utilisé — Abonne-toi pour continuer';
-    showLockWall();
+ // MODE ESSAI
+const isTrialGeneration = !isPro && !freeUsed;
+
+ try{
+  const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+  const data=await res.json();
+
+  if(!res.ok||data.error)
+    throw new Error(data.error||'Erreur serveur');
+
+  currentResults=data.content;
+
+  showResults();
+
+  // Après la première génération gratuite
+  if (!isPro && !freeUsed) {
+
+    freeUsed = true;
+
+    document.getElementById('banner-txt').textContent =
+      '🔒 Essai terminé — Passe à RepurseAI Pro';
+
+    setTimeout(() => {
+      showLockWall();
+    }, 1500);
   }
 
-  // UI chargement
-  const btn=document.getElementById('gen-btn');
-  btn.innerHTML='<span class="spinner"></span> Génération en cours…';
-  btn.disabled=true;
-  document.getElementById('progress-wrap').style.display='block';
-  startProgress();
-
-  try{
-    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
-    const data=await res.json();
-    if(!res.ok||data.error)throw new Error(data.error||'Erreur serveur');
-    currentResults=data.content;
-    showResults();
-  }catch(e){
-    showFormError('Erreur : '+e.message);
-    btn.innerHTML=isPro?'⚡ Générer × 10 plateformes':'⚡ Générer — 2 plateformes (essai gratuit)';
-    btn.disabled=false;
-    document.getElementById('progress-wrap').style.display='none';
-    stopProgress();
-  }
-}
+}catch(e){
 
 function startProgress(){
   let p=0;
