@@ -538,10 +538,9 @@ async function verifyCode(){
     } else {
       showLoginError('Code invalide ou expiré. Vérifie ton Gmail ou contacte le support.');
     }
-  }catch{
-    showLoginError('Erreur réseau. Réessaie dans quelques secondes.');
-  }
-  btn.textContent='🚀 Valider mon code';btn.disabled=false;
+ }catch(err){
+    console.error(err);
+    showLoginError('❌ Code incorrect ou expiré');
 }
 
 function clearLoginError(){document.getElementById('login-error').style.display='none';}
