@@ -517,42 +517,103 @@ function updateCharCount(){
 }
 
 // ─── VÉRIFICATION CODE ─────────────────────────────────────────────────
-async function verifyCode(){
-  const code=document.getElementById('code-input').value.trim();
-  if(!code)return;
-  const btn=document.getElementById('verify-btn');
-  btn.textContent='Vérification…';btn.disabled=true;
-  document.getElementById('login-error').style.display='none';
-  document.getElementById('login-ok').style.display='none';
-  try{
+async function verifyCode() {
+
+  const code = document.getElementById('code-input').value.trim();
+
+  if (!code) {
+    showLoginError('Entre ton code.');
+    return;
+  }
+
+  const btn = document.getElementById('verify-btn');
+
+  btn.textContent = 'Vérification…';
+  btn.disabled = true;
+
+  clearLoginError();
+
+  document.getElementById('login-ok').style.display = 'none';
+
+  try {
+
     // Appel backend Vercel
-    const res=await fetch('/api/verify-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
-    const data=await res.json();
-    if(data.valid){
-      document.getElementById('login-ok').style.display='block';
-      setTimeout(()=>{
-        isPro=true;
+    const res = await fetch('/api/verify-code', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ code })
+    });
+
+    // Si le serveur répond mal
+    if (!res.ok) {
+      throw new Error('server');
+    }
+
+    const data = await res.json();
+
+    // CODE VALIDE
+    if (data.valid) {
+
+      document.getElementById('login-ok').style.display = 'block';
+
+      setTimeout(() => {
+        isPro = true;
         updateProUI();
         showPage('app');
-      },1200);
+      }, 1200);
+
     } else {
-      showLoginError('Code invalide ou expiré. Vérifie ton Gmail ou contacte le support.');
+
+      // Mauvais code
+      showLoginError('Code invalide ou expiré.');
+
     }
- }catch{
-    showLoginError('Erreur réseau. Réessaie dans quelques secondes.');
+
+  } catch (err) {
+
+    // Réseau / serveur
+    if (err.message === 'server') {
+      showLoginError('Serveur indisponible.');
+    } else {
+      showLoginError('Erreur réseau. Réessaie.');
+    }
+
+  }
+
+  // Reset bouton
+  btn.textContent = '🚀 Valider mon code';
+  btn.disabled = false;
 }
 
-function clearLoginError(){document.getElementById('login-error').style.display='none';}
-function showLoginError(msg){const el=document.getElementById('login-error');el.textContent='❌ '+msg;el.style.display='block';}
+// ─── LOGIN ERRORS ─────────────────────────────────────────────────────
+function clearLoginError() {
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
 
 // ─── MAJ UI PRO ────────────────────────────────────────────────────────
-function updateProUI(){
-  if(isPro){
-    document.getElementById('pro-indicator').innerHTML='<span class="pro-chip">⭐ PRO</span>';
-    document.getElementById('free-banner').style.display='none';
-    document.getElementById('gen-btn').textContent='⚡ Générer × 10 plateformes';
-    document.getElementById('upsell-bar').style.display='none';
+function updateProUI() {
+
+  if (isPro) {
+
+    document.getElementById('pro-indicator').innerHTML =
+      '<span class="pro-chip">⭐ PRO</span>';
+
+    document.getElementById('free-banner').style.display = 'none';
+
+    document.getElementById('gen-btn').textContent =
+      '⚡ Générer × 10 plateformes';
+
+    document.getElementById('upsell-bar').style.display = 'none';
   }
+
   renderPlatformsTool();
 }
 
