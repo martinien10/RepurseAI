@@ -4,12 +4,10 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // OPTIONS
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  // MÉTHODE
   if (req.method !== "POST") {
     return res.status(405).json({
       error: "Method not allowed"
@@ -20,110 +18,108 @@ export default async function handler(req, res) {
 
     const { text } = req.body || {};
 
-    // VALIDATION
-    if (!text || text.trim().length < 50) {
+    if (!text) {
       return res.status(400).json({
-        error: "Minimum 50 caractères requis"
+        error: "Texte manquant"
       });
     }
 
-    const cleanText = text.trim();
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    // ─────────────────────────────────────
-    // GÉNÉRATION CONTENUS
-    // ─────────────────────────────────────
+    const prompt = `
+Tu es RepurseAI.
 
-    const content = {
+Transforme le texte utilisateur en contenus marketing ultra puissants.
 
-      linkedin:
-`🚀 ${cleanText}
+Tu dois générer :
 
-Voici les 3 leçons importantes :
+- linkedin
+- instagram
+- twitter
+- facebook
+- youtube
+- tiktok
+- pinterest
+- threads
+- newsletter
+- whatsapp
 
-✅ Construire chaque jour
-✅ Être constant
-✅ Publier régulièrement
+IMPORTANT :
+- contenu humain
+- émotionnel
+- viral
+- très long
+- structuré
+- avec emojis
+- avec hooks
+- avec storytelling
+- avec CTA
+- différent à chaque fois
+- qualité premium
 
-Qu'en penses-tu ? 👇`,
+Réponds UNIQUEMENT en JSON valide.
 
-      instagram:
-`✨ ${cleanText}
+Texte utilisateur :
+${text}
+`;
 
-🔥 Ce contenu peut changer ta manière de travailler.
+    const response = await fetch(
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                {
+                  text: prompt
+                }
+              ]
+            }
+          ]
+        })
+      }
+    );
 
-💡 Sauvegarde ce post pour plus tard.
+    const data = await response.json();
 
-#business #motivation #success #entrepreneur`,
+    const raw =
+      data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      twitter:
-`🚀 ${cleanText}
+    if (!raw) {
+      return res.status(500).json({
+        error: "Réponse Gemini vide"
+      });
+    }
 
-La clé :
-→ discipline
-→ constance
-→ patience.`,
+    let cleaned = raw
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-      facebook:
-`🔥 ${cleanText}
+    let parsed;
 
-Tu es d'accord avec ça ? 👀
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
 
-Dis-moi en commentaire.`,
-
-      youtube:
-`🎥 TITRE : ${cleanText}
-
-📌 Dans cette vidéo :
-- stratégie
-- conseils
-- méthode
-- erreurs à éviter
-
-Abonne-toi pour plus 🚀`,
-
-      tiktok:
-`🎬 Hook :
-"${cleanText}"
-
-Finis la vidéo avec :
-
-"Like & abonne-toi 🚀"`,
-
-      pinterest:
-`📌 ${cleanText}
-
-Idée business & productivité.`,
-
-      threads:
-`${cleanText}
-
-Les gens compliquent trop les choses.`,
-
-      newsletter:
-`📧 Sujet : ${cleanText}
-
-Voici les points importants à retenir cette semaine...`,
-
-      whatsapp:
-`💬 ${cleanText}
-
-Partage ça à quelqu'un qui doit voir ça 👇`
-    };
-
-    // ─────────────────────────────────────
-    // RETOUR API
-    // ─────────────────────────────────────
+      return res.status(500).json({
+        error: "JSON Gemini invalide",
+        raw: cleaned
+      });
+    }
 
     return res.status(200).json({
-      success: true,
-      content
+      content: parsed
     });
 
   } catch (err) {
 
     return res.status(500).json({
-      error: "Erreur serveur"
+      error: err.message
     });
-
   }
 }
