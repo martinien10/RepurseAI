@@ -101,13 +101,12 @@ WHATSAPP:
     const raw =
       data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
-    if (!raw) {
+   if (!raw) {
 
-      return res.status(500).json({
-        error: "Réponse Gemini vide",
-        details: data
-      });
-    }
+  return res.status(500).json({
+    error: JSON.stringify(data)
+  });
+}
 
     // Extraction simple
     const getSection = (name) => {
