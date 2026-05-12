@@ -119,7 +119,7 @@ Message court mais puissant.
     // ─────────────────────────────────────────────
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/google/flan-t5-large",
+      "https://router.huggingface.co/hf-inference/models/gpt2",
       {
         method: "POST",
         headers: {
