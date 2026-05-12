@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
 
   // ─────────────────────────────────────────────
-  // HEADERS
+  // CORS
   // ─────────────────────────────────────────────
 
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -33,39 +33,38 @@ export default async function handler(req, res) {
     }
 
     // ─────────────────────────────────────────────
-    // HF TOKEN
+    // API KEY
     // ─────────────────────────────────────────────
 
-    const token = process.env.HF_TOKEN;
+    const apiKey = process.env.GROQ_API_KEY;
 
-    if (!token) {
+    if (!apiKey) {
       return res.status(500).json({
-        error: "HF_TOKEN manquant"
+        error: "GROQ_API_KEY manquant"
       });
     }
 
     // ─────────────────────────────────────────────
-    // PROMPT IA
+    // PROMPT
     // ─────────────────────────────────────────────
 
     const prompt = `
-Tu es RepurseAI, une intelligence artificielle premium spécialisée dans le marketing viral et la création de contenus sociaux puissants.
+Tu es RepurseAI, une intelligence artificielle premium spécialisée dans le marketing viral et les contenus sociaux.
 
 Transforme cette idée :
 
 "${text}"
 
-en contenus différents et engageants pour plusieurs plateformes.
+en contenus modernes, humains, engageants et détaillés.
 
 RÈGLES :
-- contenu humain
-- storytelling
-- émotions
-- hooks puissants
-- contenu détaillé
-- moderne et viral
-- naturel
-- éviter les répétitions
+- Chaque plateforme doit avoir un style différent
+- Utiliser storytelling et émotions
+- Ajouter hooks puissants
+- Contenus longs et premium
+- Naturel et humain
+- Éviter les répétitions
+- Ajouter hashtags quand utile
 
 FORMAT JSON OBLIGATOIRE :
 
@@ -84,33 +83,39 @@ FORMAT JSON OBLIGATOIRE :
 `;
 
     // ─────────────────────────────────────────────
-    // HUGGING FACE + TOGETHER
+    // GROQ API
     // ─────────────────────────────────────────────
 
     const response = await fetch(
-      "https://router.huggingface.co/together/v1/completions",
+      "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          Authorization: "Bearer " + token,
+          Authorization: "Bearer " + apiKey,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "meta-llama/Llama-3-8b-chat-hf",
-          prompt: prompt,
-          max_tokens: 800,
-          temperature: 0.9
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          temperature: 0.9,
+          max_tokens: 1800
         })
       }
     );
 
-    // ─────────────────────────────────────────────
-    // SAFE JSON
-    // ─────────────────────────────────────────────
-
     const data = await response.json();
 
-    const raw = data?.choices?.[0]?.text;
+    // ─────────────────────────────────────────────
+    // RAW RESPONSE
+    // ─────────────────────────────────────────────
+
+    const raw =
+      data?.choices?.[0]?.message?.content;
 
     if (!raw) {
 
@@ -123,7 +128,7 @@ FORMAT JSON OBLIGATOIRE :
     // CLEAN JSON
     // ─────────────────────────────────────────────
 
-    const cleaned = raw
+    let cleaned = raw
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
