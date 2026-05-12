@@ -45,13 +45,13 @@ export default async function handler(req, res) {
     }
 
     // ─────────────────────────────────────────────
-    // PROMPT IA
+    // PROMPT
     // ─────────────────────────────────────────────
 
     const prompt = `
 Tu es RepurseAI, une intelligence artificielle spécialisée dans la création de contenus viraux et marketing.
 
-Transforme cette idée utilisateur :
+Transforme cette idée :
 
 "${text}"
 
@@ -63,7 +63,7 @@ RÈGLES :
 - ajoute storytelling, émotions et hooks
 - évite les textes génériques
 - rends les contenus intéressants à lire
-- les réponses doivent être assez longues
+- les réponses doivent être longues
 - ajoute des hashtags quand pertinent
 
 FORMAT JSON OBLIGATOIRE :
@@ -139,10 +139,27 @@ Message court mais puissant.
     );
 
     // ─────────────────────────────────────────────
-    // DATA
+    // SAFE JSON PARSE
     // ─────────────────────────────────────────────
 
-    const data = await response.json();
+    const textResponse = await response.text();
+
+    let data;
+
+    try {
+
+      data = JSON.parse(textResponse);
+
+    } catch {
+
+      return res.status(500).json({
+        error: textResponse
+      });
+    }
+
+    // ─────────────────────────────────────────────
+    // RAW OUTPUT
+    // ─────────────────────────────────────────────
 
     const raw = data?.[0]?.generated_text;
 
@@ -170,7 +187,7 @@ Message court mais puissant.
 
     } catch {
 
-      // fallback si le JSON casse
+      // fallback si JSON cassé
 
       parsed = {
         linkedin: cleaned,
