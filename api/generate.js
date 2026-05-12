@@ -55,7 +55,7 @@ Transforme cette idée :
 
 "${text}"
 
-en contenus très longs, humains, modernes, puissants, émotionnels et viraux.
+contenus viraux engageants et modernes.
 
 Chaque plateforme doit avoir un style totalement différent.
 
