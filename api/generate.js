@@ -1,9 +1,5 @@
 export default async function handler(req, res) {
 
-  // ─────────────────────────────────────────────
-  // HEADERS
-  // ─────────────────────────────────────────────
-
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -12,88 +8,34 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method not allowed"
-    });
-  }
-
   try {
-
-    // ─────────────────────────────────────────────
-    // INPUT
-    // ─────────────────────────────────────────────
 
     const { text } = req.body || {};
 
-    if (!text || text.trim().length < 5) {
+    if (!text) {
       return res.status(400).json({
-        error: "Texte trop court"
+        error: "Texte manquant"
       });
     }
 
-    // ─────────────────────────────────────────────
-    // GEMINI KEY
-    // ─────────────────────────────────────────────
-
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "Clé Gemini manquante"
+        error: "Clé OpenAI manquante"
       });
     }
 
-    // ─────────────────────────────────────────────
-    // PROMPT
-    // ─────────────────────────────────────────────
-
     const prompt = `
-Tu es RepurseAI, une intelligence artificielle premium spécialisée dans le marketing viral, le copywriting émotionnel et la création de contenus sociaux ultra engageants.
+Tu es RepurseAI.
 
 Transforme cette idée :
 
-"${text}"
+${text}
 
-contenus engageants viraux et modernes.
+en contenus puissants viraux long et engageants.
 
-Chaque plateforme doit avoir un style totalement différent.
-
-━━━━━━━━━━━━━━━━━━━
-
-LINKEDIN :
-Post professionnel storytelling.
-
-INSTAGRAM :
-Caption virale avec emojis et hashtags.
-
-TWITTER :
-Thread viral et punchy.
-
-FACEBOOK :
-Post émotionnel et humain.
-
-YOUTUBE :
-Script vidéo détaillé.
-
-TIKTOK :
-Hook ultra viral.
-
-PINTEREST :
-Inspirant et lifestyle.
-
-THREADS :
-Conversation naturelle.
-
-NEWSLETTER :
-Email marketing premium.
-
-WHATSAPP :
-Message court mais très puissant.
-
-━━━━━━━━━━━━━━━━━━━
-
-Réponds UNIQUEMENT avec un JSON valide :
+Réponds uniquement en JSON valide :
 
 {
   "linkedin":"...",
@@ -109,52 +51,36 @@ Réponds UNIQUEMENT avec un JSON valide :
 }
 `;
 
-    // ─────────────────────────────────────────────
-    // GEMINI REQUEST
-    // ─────────────────────────────────────────────
-
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey,
+      "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + apiKey
         },
         body: JSON.stringify({
-          contents: [
+          model: "gpt-4o-mini",
+          messages: [
             {
-              parts: [
-                {
-                  text: prompt
-                }
-              ]
+              role: "system",
+              content: "Tu es une IA premium de copywriting viral."
+            },
+            {
+              role: "user",
+              content: prompt
             }
           ],
-          generationConfig: {
-            temperature: 1,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 1800
-          }
+          temperature: 1,
+          max_tokens: 1800
         })
       }
     );
 
-    // ─────────────────────────────────────────────
-    // GEMINI DATA
-    // ─────────────────────────────────────────────
-
     const data = await response.json();
 
-    console.log(
-      "GEMINI RESPONSE =",
-      JSON.stringify(data)
-    );
-
     const raw =
-      data?.candidates?.[0]?.content?.parts
-        ?.map(p => p.text || "")
-        .join("\n") || "";
+      data?.choices?.[0]?.message?.content || "";
 
     if (!raw) {
 
@@ -163,32 +89,12 @@ Réponds UNIQUEMENT avec un JSON valide :
       });
     }
 
-    // ─────────────────────────────────────────────
-    // CLEAN JSON
-    // ─────────────────────────────────────────────
-
     const cleaned = raw
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    let parsed;
-
-    try {
-
-      parsed = JSON.parse(cleaned);
-
-    } catch (e) {
-
-      return res.status(500).json({
-        error: "JSON Gemini invalide",
-        raw: cleaned
-      });
-    }
-
-    // ─────────────────────────────────────────────
-    // RESPONSE
-    // ─────────────────────────────────────────────
+    const parsed = JSON.parse(cleaned);
 
     return res.status(200).json({
       content: parsed
