@@ -26,6 +26,8 @@ export default async function handler(req, res) {
 
     const { text } = req.body || {};
 
+    const isPro = req.body?.isPro || false;
+
     if (!text || text.trim().length < 5) {
       return res.status(400).json({
         error: "Texte trop court"
@@ -152,6 +154,18 @@ FORMAT JSON OBLIGATOIRE :
         threads: cleaned,
         newsletter: cleaned,
         whatsapp: cleaned
+      };
+    }
+
+    // ─────────────────────────────────────────────
+    // FREE LIMIT
+    // ─────────────────────────────────────────────
+
+    if (!isPro) {
+
+      parsed = {
+        linkedin: parsed.linkedin,
+        instagram: parsed.instagram
       };
     }
 
