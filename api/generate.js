@@ -129,7 +129,7 @@ Message court mais puissant.
         body: JSON.stringify({
           inputs: prompt,
           parameters: {
-            max_new_tokens: 1400,
+            max_new_tokens: 400,
             temperature: 0.9,
             top_p: 0.95,
             return_full_text: false
