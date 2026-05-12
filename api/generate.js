@@ -119,7 +119,7 @@ Message court mais puissant.
     // ─────────────────────────────────────────────
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.2",
+      "https://router.huggingface.co/hf-inference/models/google/flan-t5-large",
       {
         method: "POST",
         headers: {
