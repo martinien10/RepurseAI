@@ -55,7 +55,7 @@ Transforme cette idée :
 
 "${text}"
 
-contenus viraux engageants et modernes.
+contenus engageants et modernes.
 
 Chaque plateforme doit avoir un style totalement différent.
 
@@ -134,7 +134,7 @@ Réponds UNIQUEMENT avec un JSON valide :
             temperature: 1,
             topP: 0.95,
             topK: 40,
-            maxOutputTokens: 1800
+            maxOutputTokens: 1200
           }
         })
       }
