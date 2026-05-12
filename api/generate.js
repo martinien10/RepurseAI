@@ -1,5 +1,9 @@
 export default async function handler(req, res) {
 
+  // ─────────────────────────────────────────────
+  // HEADERS
+  // ─────────────────────────────────────────────
+
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -8,34 +12,61 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
+  }
+
   try {
+
+    // ─────────────────────────────────────────────
+    // INPUT
+    // ─────────────────────────────────────────────
 
     const { text } = req.body || {};
 
-    if (!text) {
+    if (!text || text.trim().length < 5) {
       return res.status(400).json({
-        error: "Texte manquant"
+        error: "Texte trop court"
       });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
+    // ─────────────────────────────────────────────
+    // HF TOKEN
+    // ─────────────────────────────────────────────
 
-    if (!apiKey) {
+    const token = process.env.HF_TOKEN;
+
+    if (!token) {
       return res.status(500).json({
-        error: "Clé OpenAI manquante"
+        error: "HF_TOKEN manquant"
       });
     }
+
+    // ─────────────────────────────────────────────
+    // PROMPT IA
+    // ─────────────────────────────────────────────
 
     const prompt = `
-Tu es RepurseAI.
+Tu es RepurseAI, une intelligence artificielle spécialisée dans la création de contenus viraux et marketing.
 
-Transforme cette idée :
+Transforme cette idée utilisateur :
 
-${text}
+"${text}"
 
-en contenus puissants viraux long et engageants.
+en contenus puissants, humains, engageants et modernes.
 
-Réponds uniquement en JSON valide :
+RÈGLES :
+- chaque plateforme doit avoir un style différent
+- le contenu doit être naturel
+- ajoute storytelling, émotions et hooks
+- évite les textes génériques
+- rends les contenus intéressants à lire
+- les réponses doivent être assez longues
+- ajoute des hashtags quand pertinent
+
+FORMAT JSON OBLIGATOIRE :
 
 {
   "linkedin":"...",
@@ -49,38 +80,71 @@ Réponds uniquement en JSON valide :
   "newsletter":"...",
   "whatsapp":"..."
 }
+
+STYLE :
+
+LINKEDIN :
+Post professionnel détaillé.
+
+INSTAGRAM :
+Caption virale avec emojis et hashtags.
+
+TWITTER :
+Thread dynamique et motivation.
+
+FACEBOOK :
+Post émotionnel et humain.
+
+YOUTUBE :
+Script vidéo engageant.
+
+TIKTOK :
+Hook ultra viral.
+
+PINTEREST :
+Inspiration lifestyle.
+
+THREADS :
+Conversation naturelle.
+
+NEWSLETTER :
+Email marketing premium.
+
+WHATSAPP :
+Message court mais puissant.
 `;
 
+    // ─────────────────────────────────────────────
+    // HUGGING FACE API
+    // ─────────────────────────────────────────────
+
     const response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
+      "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + apiKey
+          "Authorization": "Bearer " + token,
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            {
-              role: "system",
-              content: "Tu es une IA premium de copywriting viral."
-            },
-            {
-              role: "user",
-              content: prompt
-            }
-          ],
-          temperature: 1,
-          max_tokens: 1800
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 1400,
+            temperature: 0.9,
+            top_p: 0.95,
+            return_full_text: false
+          }
         })
       }
     );
 
+    // ─────────────────────────────────────────────
+    // DATA
+    // ─────────────────────────────────────────────
+
     const data = await response.json();
 
-    const raw =
-      data?.choices?.[0]?.message?.content || "";
+    const raw = data?.[0]?.generated_text;
 
     if (!raw) {
 
@@ -89,12 +153,42 @@ Réponds uniquement en JSON valide :
       });
     }
 
+    // ─────────────────────────────────────────────
+    // CLEAN JSON
+    // ─────────────────────────────────────────────
+
     const cleaned = raw
       .replace(/```json/g, "")
       .replace(/```/g, "")
       .trim();
 
-    const parsed = JSON.parse(cleaned);
+    let parsed;
+
+    try {
+
+      parsed = JSON.parse(cleaned);
+
+    } catch {
+
+      // fallback si le JSON casse
+
+      parsed = {
+        linkedin: cleaned,
+        instagram: cleaned,
+        twitter: cleaned,
+        facebook: cleaned,
+        youtube: cleaned,
+        tiktok: cleaned,
+        pinterest: cleaned,
+        threads: cleaned,
+        newsletter: cleaned,
+        whatsapp: cleaned
+      };
+    }
+
+    // ─────────────────────────────────────────────
+    // RESPONSE
+    // ─────────────────────────────────────────────
 
     return res.status(200).json({
       content: parsed
