@@ -64,7 +64,6 @@ RÈGLES :
 - hooks puissants
 - contenu détaillé
 - moderne et viral
-- ⁠long texte 
 - naturel
 - éviter les répétitions
 
