@@ -598,51 +598,79 @@ let progressInterval = null;
 
 async function generate(){
 
+  // Vérifie localStorage
+  const alreadyUsed = localStorage.getItem(
+    "repurse_free_used"
+  );
+
   // Bloque après essai gratuit
-  if(!isPro && freeUsed){
-    document.getElementById('modal-upgrade').style.display='flex';
+  if(!isPro && (freeUsed || alreadyUsed)){
+
+    document.getElementById(
+      'modal-upgrade'
+    ).style.display='flex';
+
     return;
   }
 
-  const text = document.getElementById('input-text').value.trim();
+  const text = document.getElementById(
+    'input-text'
+  ).value.trim();
 
   // Vérification longueur
   if(text.length < 50){
-    showFormError('Minimum 50 caractères requis.');
+
+    showFormError(
+      'Minimum 50 caractères requis.'
+    );
+
     return;
   }
 
   clearFormError();
 
   // Détection essai gratuit
-  const isTrialGeneration = !isPro && !freeUsed;
+  const isTrialGeneration =
+    !isPro && !freeUsed;
 
   // UI chargement
-  const btn = document.getElementById('gen-btn');
+  const btn =
+    document.getElementById('gen-btn');
 
   btn.innerHTML =
     '<span class="spinner"></span> Génération en cours…';
 
   btn.disabled = true;
 
-  document.getElementById('progress-wrap').style.display='block';
+  document.getElementById(
+    'progress-wrap'
+  ).style.display='block';
 
   startProgress();
 
   try {
 
-    const res = await fetch('/api/generate', {
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify({ text })
-    });
+    const res = await fetch(
+      '/api/generate',
+      {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify({
+          text,
+          isPro
+        })
+      }
+    );
 
     const data = await res.json();
 
     if(!res.ok || data.error){
-      throw new Error(data.error || 'Erreur serveur');
+
+      throw new Error(
+        data.error || 'Erreur serveur'
+      );
     }
 
     currentResults = data.content;
@@ -654,17 +682,29 @@ async function generate(){
 
       freeUsed = true;
 
-      document.getElementById('banner-txt').textContent =
+      // Sauvegarde locale
+      localStorage.setItem(
+        "repurse_free_used",
+        "true"
+      );
+
+      document.getElementById(
+        'banner-txt'
+      ).textContent =
         '🔒 Essai terminé — Passe à RepurseAI Pro';
 
       setTimeout(() => {
+
         showLockWall();
+
       }, 1500);
     }
 
   } catch(e){
 
-    showFormError('Erreur : ' + e.message);
+    showFormError(
+      'Erreur : ' + e.message
+    );
 
     btn.innerHTML = isPro
       ? '⚡ Générer × 10 plateformes'
@@ -672,7 +712,9 @@ async function generate(){
 
     btn.disabled = false;
 
-    document.getElementById('progress-wrap').style.display='none';
+    document.getElementById(
+      'progress-wrap'
+    ).style.display='none';
 
     stopProgress();
   }
