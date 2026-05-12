@@ -1,9 +1,4 @@
-
 export default async function handler(req, res) {
-
-  // ─────────────────────────────────────────────
-  // HEADERS
-  // ─────────────────────────────────────────────
 
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -21,21 +16,13 @@ export default async function handler(req, res) {
 
   try {
 
-    // ─────────────────────────────────────────────
-    // INPUT
-    // ─────────────────────────────────────────────
-
     const { text } = req.body || {};
 
-    if (!text || text.trim().length < 5) {
+    if (!text) {
       return res.status(400).json({
-        error: "Texte trop court"
+        error: "Texte manquant"
       });
     }
-
-    // ─────────────────────────────────────────────
-    // GEMINI API KEY
-    // ─────────────────────────────────────────────
 
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -45,148 +32,49 @@ export default async function handler(req, res) {
       });
     }
 
-    // ─────────────────────────────────────────────
-    // PROMPT IA PREMIUM
-    // ─────────────────────────────────────────────
-
     const prompt = `
-Tu es RepurseAI, une intelligence artificielle premium spécialisée dans le marketing viral, le copywriting émotionnel et la création de contenus sociaux ultra engageants.
+Tu es une IA premium de copywriting.
 
-Ta mission :
-Transformer l’idée utilisateur en contenus puissants, humains, émotionnels, détaillés et addictifs pour chaque plateforme sociale.
+Crée des contenus longs, puissants, humains et viraux.
 
-━━━━━━━━━━━━━━━━━━━
-OBJECTIF PRINCIPAL
-━━━━━━━━━━━━━━━━━━━
+Sujet :
+${text}
 
-Le contenu doit :
-- captiver immédiatement
-- sembler écrit par un humain expert
-- provoquer émotion, motivation ou curiosité
-- donner envie de liker, commenter et partager
-- être différent à chaque génération
-- être moderne et crédible
-- utiliser storytelling et psychologie humaine
-- avoir un ton premium
-- impressionner l’utilisateur dès la lecture
+Retourne EXACTEMENT ce format :
 
-━━━━━━━━━━━━━━━━━━━
-RÈGLES ABSOLUES
-━━━━━━━━━━━━━━━━━━━
+LINKEDIN:
+...
 
-❌ Ne jamais générer de petits textes
-❌ Ne jamais répondre avec des phrases génériques
-❌ Ne jamais répéter les mêmes structures
-❌ Ne jamais écrire du contenu “robotique”
+INSTAGRAM:
+...
 
-✅ Chaque plateforme doit avoir un style UNIQUE
-✅ Les textes doivent être détaillés et riches
-✅ Utiliser hooks puissants
-✅ Ajouter émotions et persuasion
-✅ Utiliser emojis intelligemment
-✅ Ajouter CTA quand pertinent
-✅ Générer du contenu naturel et humain
-✅ Créer de vrais contenus premium dignes d’une agence marketing
+TWITTER:
+...
 
-━━━━━━━━━━━━━━━━━━━
-IDÉE UTILISATEUR
-━━━━━━━━━━━━━━━━━━━
+FACEBOOK:
+...
 
-"${text}"
+YOUTUBE:
+...
 
-━━━━━━━━━━━━━━━━━━━
-FORMAT DE RÉPONSE
-━━━━━━━━━━━━━━━━━━━
+TIKTOK:
+...
 
-Réponds UNIQUEMENT avec un JSON valide.
+PINTEREST:
+...
 
-Format EXACT :
+THREADS:
+...
 
-{
-  "linkedin":"...",
-  "instagram":"...",
-  "twitter":"...",
-  "facebook":"...",
-  "youtube":"...",
-  "tiktok":"...",
-  "pinterest":"...",
-  "threads":"...",
-  "newsletter":"...",
-  "whatsapp":"..."
-}
+NEWSLETTER:
+...
 
-━━━━━━━━━━━━━━━━━━━
-STYLE PAR PLATEFORME
-━━━━━━━━━━━━━━━━━━━
-
-LINKEDIN :
-- Long post professionnel
-- Storytelling business
-- Structure aérée
-- Forte valeur
-- Ton inspirant
-- CTA à la fin
-
-INSTAGRAM :
-- Caption très virale
-- Hook émotionnel dès la première ligne
-- Emojis modernes
-- Hashtags puissants
-- Style influenceur premium
-
-TWITTER :
-- Thread intelligent
-- Punchlines fortes
-- Ton viral et partageable
-- Style entrepreneur / motivation
-
-FACEBOOK :
-- Conversation humaine
-- Émotionnel
-- Inspirant
-- Long et engageant
-
-YOUTUBE :
-- Script vidéo détaillé
-- Intro très forte
-- Développement structuré
-- CTA abonnement
-- Très engageant
-
-TIKTOK :
-- Hook ultra viral
-- Style moderne Gen Z
-- Très dynamique
-- Format addictif
-
-PINTEREST :
-- Inspirant
-- SEO friendly
-- Motivation et lifestyle
-
-THREADS :
-- Style conversation authentique
-- Naturel et humain
-- Très engageant
-
-NEWSLETTER :
-- Email premium marketing
-- Très détaillé
-- Persuasif
-- Haute valeur
-
-WHATSAPP :
-- Message viral partageable
-- Court mais très impactant
-- Ton humain et émotionnel
+WHATSAPP:
+...
 `;
 
-    // ─────────────────────────────────────────────
-    // APPEL GEMINI
-    // ─────────────────────────────────────────────
-
     const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + apiKey,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey,
       {
         method: "POST",
         headers: {
@@ -201,32 +89,17 @@ WHATSAPP :
                 }
               ]
             }
-          ],
-          generationConfig: {
-            temperature: 1,
-            topP: 0.95,
-            topK: 40,
-            maxOutputTokens: 4000
-          }
+          ]
         })
       }
     );
 
-    // ─────────────────────────────────────────────
-    // DATA GEMINI
-    // ─────────────────────────────────────────────
-
     const data = await response.json();
 
-    console.log(
-      "GEMINI DATA =",
-      JSON.stringify(data)
-    );
+    console.log(data);
 
     const raw =
-      data?.candidates?.[0]?.content?.parts
-        ?.map(part => part.text || "")
-        .join("") || "";
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
 
     if (!raw) {
 
@@ -236,35 +109,32 @@ WHATSAPP :
       });
     }
 
-    // ─────────────────────────────────────────────
-    // NETTOYAGE JSON
-    // ─────────────────────────────────────────────
+    // Extraction simple
+    const getSection = (name) => {
 
-    let cleaned = raw
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+      const regex = new RegExp(
+        name + ":([\\s\\S]*?)(?=LINKEDIN:|INSTAGRAM:|TWITTER:|FACEBOOK:|YOUTUBE:|TIKTOK:|PINTEREST:|THREADS:|NEWSLETTER:|WHATSAPP:|$)",
+        "i"
+      );
 
-    let parsed;
+      const match = raw.match(regex);
 
-    try {
-
-      parsed = JSON.parse(cleaned);
-
-    } catch (e) {
-
-      return res.status(500).json({
-        error: "JSON Gemini invalide",
-        raw: cleaned
-      });
-    }
-
-    // ─────────────────────────────────────────────
-    // RÉPONSE
-    // ─────────────────────────────────────────────
+      return match ? match[1].trim() : "";
+    };
 
     return res.status(200).json({
-      content: parsed
+      content: {
+        linkedin: getSection("LINKEDIN"),
+        instagram: getSection("INSTAGRAM"),
+        twitter: getSection("TWITTER"),
+        facebook: getSection("FACEBOOK"),
+        youtube: getSection("YOUTUBE"),
+        tiktok: getSection("TIKTOK"),
+        pinterest: getSection("PINTEREST"),
+        threads: getSection("THREADS"),
+        newsletter: getSection("NEWSLETTER"),
+        whatsapp: getSection("WHATSAPP")
+      }
     });
 
   } catch (err) {
