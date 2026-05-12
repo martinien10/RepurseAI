@@ -45,26 +45,28 @@ export default async function handler(req, res) {
     }
 
     // ─────────────────────────────────────────────
-    // PROMPT
+    // PROMPT IA
     // ─────────────────────────────────────────────
 
     const prompt = `
-Tu es RepurseAI, une intelligence artificielle spécialisée dans la création de contenus viraux et marketing.
+Tu es RepurseAI, une intelligence artificielle premium spécialisée dans le marketing viral et la création de contenus sociaux puissants.
 
 Transforme cette idée :
 
 "${text}"
 
-en contenus puissants, humains, engageants et modernes.
+en contenus différents et engageants pour plusieurs plateformes.
 
 RÈGLES :
-- chaque plateforme doit avoir un style différent
-- le contenu doit être naturel
-- ajoute storytelling, émotions et hooks
-- évite les textes génériques
-- rends les contenus intéressants à lire
-- les réponses doivent être longues
-- ajoute des hashtags quand pertinent
+- contenu humain
+- storytelling
+- émotions
+- hooks puissants
+- contenu détaillé
+- moderne et viral
+- ⁠long texte 
+- naturel
+- éviter les répétitions
 
 FORMAT JSON OBLIGATOIRE :
 
@@ -80,88 +82,36 @@ FORMAT JSON OBLIGATOIRE :
   "newsletter":"...",
   "whatsapp":"..."
 }
-
-STYLE :
-
-LINKEDIN :
-Post professionnel détaillé.
-
-INSTAGRAM :
-Caption virale avec emojis et hashtags.
-
-TWITTER :
-Thread dynamique et motivation.
-
-FACEBOOK :
-Post émotionnel et humain.
-
-YOUTUBE :
-Script vidéo engageant.
-
-TIKTOK :
-Hook ultra viral.
-
-PINTEREST :
-Inspiration lifestyle.
-
-THREADS :
-Conversation naturelle.
-
-NEWSLETTER :
-Email marketing premium.
-
-WHATSAPP :
-Message court mais puissant.
 `;
 
     // ─────────────────────────────────────────────
-    // HUGGING FACE API
+    // HUGGING FACE + TOGETHER
     // ─────────────────────────────────────────────
 
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/gpt2",
+      "https://router.huggingface.co/together/v1/completions",
       {
         method: "POST",
         headers: {
-          "Authorization": "Bearer " + token,
+          Authorization: "Bearer " + token,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            max_new_tokens: 400,
-            temperature: 0.9,
-            top_p: 0.95,
-            return_full_text: false
-          }
+          model: "mistralai/Mistral-7B-Instruct-v0.2",
+          prompt: prompt,
+          max_tokens: 800,
+          temperature: 0.9
         })
       }
     );
 
     // ─────────────────────────────────────────────
-    // SAFE JSON PARSE
+    // SAFE JSON
     // ─────────────────────────────────────────────
 
-    const textResponse = await response.text();
+    const data = await response.json();
 
-    let data;
-
-    try {
-
-      data = JSON.parse(textResponse);
-
-    } catch {
-
-      return res.status(500).json({
-        error: textResponse
-      });
-    }
-
-    // ─────────────────────────────────────────────
-    // RAW OUTPUT
-    // ─────────────────────────────────────────────
-
-    const raw = data?.[0]?.generated_text;
+    const raw = data?.choices?.[0]?.text;
 
     if (!raw) {
 
@@ -186,8 +136,6 @@ Message court mais puissant.
       parsed = JSON.parse(cleaned);
 
     } catch {
-
-      // fallback si JSON cassé
 
       parsed = {
         linkedin: cleaned,
