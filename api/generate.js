@@ -134,7 +134,7 @@ Réponds UNIQUEMENT avec un JSON valide :
             temperature: 1,
             topP: 0.95,
             topK: 40,
-            maxOutputTokens: 4000
+            maxOutputTokens: 1800
           }
         })
       }
