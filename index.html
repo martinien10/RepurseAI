@@ -545,8 +545,7 @@ async function verifyCode() {
     });
 
     const data = await res.json();
-
-    if (!res.ok || !data.valid) {
+if (!res.ok || !data.valid) {
 
       showFormError(
         data.message ||
@@ -599,7 +598,6 @@ async function verifyCode() {
     btn.disabled = false;
   }
 }
-
   btn.textContent = '🚀 Valider mon code';
   btn.disabled = false;
 }
