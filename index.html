@@ -550,21 +550,34 @@ async function verifyCode() {
 
   try {
 
-    const res = await fetch(
-      '/api/verify-code',
-      {
-        method: 'POST',
+    // ─────────────────────
+// DEVICE ID UNIQUE
+// ─────────────────────
 
-        headers: {
-          'Content-Type':
-            'application/json'
-        },
+let deviceId =
+  localStorage.getItem(
+    'repurse_device_id'
+  );
 
-        body: JSON.stringify({
-          code
-        })
-      }
-    );
+if (!deviceId) {
+
+  deviceId =
+    'device-' +
+    Math.random()
+      .toString(36)
+      .substring(2) +
+    Date.now();
+
+  localStorage.setItem(
+    'repurse_device_id',
+    deviceId
+  );
+}
+
+body: JSON.stringify({
+  code,
+  deviceId
+})
 
     const data =
       await res.json();
