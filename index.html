@@ -551,38 +551,56 @@ async function verifyCode() {
   try {
 
     // ─────────────────────
-// DEVICE ID UNIQUE
-// ─────────────────────
+    // DEVICE ID UNIQUE
+    // ─────────────────────
 
-let deviceId =
-  localStorage.getItem(
-    'repurse_device_id'
-  );
+    let deviceId =
+      localStorage.getItem(
+        'repurse_device_id'
+      );
 
-if (!deviceId) {
+    if (!deviceId) {
 
-  deviceId =
-    'device-' +
-    Math.random()
-      .toString(36)
-      .substring(2) +
-    Date.now();
+      deviceId =
+        'device-' +
+        Math.random()
+          .toString(36)
+          .substring(2) +
+        Date.now();
 
-  localStorage.setItem(
-    'repurse_device_id',
-    deviceId
-  );
-}
+      localStorage.setItem(
+        'repurse_device_id',
+        deviceId
+      );
+    }
 
-body: JSON.stringify({
-  code,
-  deviceId
-})
+    // ─────────────────────
+    // FETCH API
+    // ─────────────────────
+
+    const res = await fetch(
+      '/api/verify-code',
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: JSON.stringify({
+          code,
+          deviceId
+        })
+      }
+    );
 
     const data =
       await res.json();
 
+    // ─────────────────────
     // CODE INVALIDE
+    // ─────────────────────
 
     if (!res.ok || !data.valid) {
 
@@ -599,7 +617,9 @@ body: JSON.stringify({
       return;
     }
 
+    // ─────────────────────
     // CODE VALIDE
+    // ─────────────────────
 
     document.getElementById(
       'login-ok'
