@@ -1,6 +1,10 @@
 // api/verify-code.js
 
-let VALID_CODES = [
+// ─────────────────────────────
+// CODES PRO
+// ─────────────────────────────
+
+const VALID_CODES = [
 
   "REPURSE-A1B2C",
   "REPURSE-D3E4F",
@@ -63,11 +67,19 @@ let VALID_CODES = [
   "REPURSE-R9S0T"
 ];
 
+// ─────────────────────────────
+// APPAREILS AUTORISÉS
+// ─────────────────────────────
+
+const CODE_DEVICES = {};
+
+// ─────────────────────────────
+// API
+// ─────────────────────────────
+
 module.exports = (req, res) => {
 
-  // ─────────────────────────────
   // CORS
-  // ─────────────────────────────
 
   res.setHeader(
     "Access-Control-Allow-Origin",
@@ -99,7 +111,7 @@ module.exports = (req, res) => {
   try {
 
     // ─────────────────────────────
-    // CODE INPUT
+    // INPUTS
     // ─────────────────────────────
 
     const code =
@@ -107,17 +119,30 @@ module.exports = (req, res) => {
         ?.toUpperCase()
         ?.trim();
 
+    const deviceId =
+      req.body?.deviceId
+        ?.trim();
+
     if (!code) {
 
       return res.status(400).json({
         valid: false,
         message:
-          "⚠️ Entre ton code Pro pour continuer."
+          "⚠️ Entre ton code Pro."
+      });
+    }
+
+    if (!deviceId) {
+
+      return res.status(400).json({
+        valid: false,
+        message:
+          "⚠️ Appareil non détecté."
       });
     }
 
     // ─────────────────────────────
-    // VALIDATION
+    // VALID CODE
     // ─────────────────────────────
 
     const valid =
@@ -128,17 +153,54 @@ module.exports = (req, res) => {
       return res.status(401).json({
         valid: false,
         message:
-          "🔒 Ce code Pro est déjà utilisé ou invalide.\n\n🚀 Abonne-toi à RepurseAI Pro pour débloquer les 10 plateformes premium."
+          "🔒 Code Pro invalide."
       });
     }
 
     // ─────────────────────────────
-    // SUPPRIME LE CODE APRÈS USAGE
+    // INITIALISE CODE
     // ─────────────────────────────
 
-    VALID_CODES = VALID_CODES.filter(
-      c => c !== code
-    );
+    if (!CODE_DEVICES[code]) {
+
+      CODE_DEVICES[code] = [];
+    }
+
+    // ─────────────────────────────
+    // DEVICE DÉJÀ AUTORISÉ
+    // ─────────────────────────────
+
+    if (
+      CODE_DEVICES[code].includes(deviceId)
+    ) {
+
+      return res.status(200).json({
+        valid: true,
+        message:
+          "🚀 Accès Pro restauré."
+      });
+    }
+
+    // ─────────────────────────────
+    // LIMITE 2 APPAREILS
+    // ─────────────────────────────
+
+    if (
+      CODE_DEVICES[code].length >= 2
+    ) {
+
+      return res.status(401).json({
+        valid: false,
+        message:
+          "🔒 Ce code Pro a atteint la limite maximale de 2 appareils autorisés."
+      });
+    }
+
+    // ─────────────────────────────
+    // AJOUT APPAREIL
+    // ─────────────────────────────
+
+    CODE_DEVICES[code].push(deviceId);
 
     // ─────────────────────────────
     // SUCCESS
@@ -155,7 +217,7 @@ module.exports = (req, res) => {
     return res.status(500).json({
       valid: false,
       message:
-        "Erreur serveur. Réessaie dans quelques instants."
+        "Erreur serveur."
     });
   }
 };
