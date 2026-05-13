@@ -2,7 +2,7 @@
 
 let VALID_CODES = [
 
-  "",
+  "REPURSE-A1B2C",
   "REPURSE-D3E4F",
   "REPURSE-G5H6I",
   "REPURSE-J7K8L",
@@ -65,6 +65,10 @@ let VALID_CODES = [
 
 module.exports = (req, res) => {
 
+  // ─────────────────────────────
+  // CORS
+  // ─────────────────────────────
+
   res.setHeader(
     "Access-Control-Allow-Origin",
     "*"
@@ -94,6 +98,10 @@ module.exports = (req, res) => {
 
   try {
 
+    // ─────────────────────────────
+    // CODE INPUT
+    // ─────────────────────────────
+
     const code =
       req.body?.code
         ?.toUpperCase()
@@ -103,9 +111,14 @@ module.exports = (req, res) => {
 
       return res.status(400).json({
         valid: false,
-        message: "Code manquant"
+        message:
+          "⚠️ Entre ton code Pro pour continuer."
       });
     }
+
+    // ─────────────────────────────
+    // VALIDATION
+    // ─────────────────────────────
 
     const valid =
       VALID_CODES.includes(code);
@@ -115,7 +128,7 @@ module.exports = (req, res) => {
       return res.status(401).json({
         valid: false,
         message:
-          "Code invalide ou déjà utilisé"
+          "🔒 Ce code Pro est déjà utilisé ou invalide.\n\n🚀 Abonne-toi à RepurseAI Pro pour débloquer les 10 plateformes premium."
       });
     }
 
@@ -127,16 +140,22 @@ module.exports = (req, res) => {
       c => c !== code
     );
 
+    // ─────────────────────────────
+    // SUCCESS
+    // ─────────────────────────────
+
     return res.status(200).json({
       valid: true,
-      message: "Accès Pro activé"
+      message:
+        "🚀 Accès Pro activé avec succès !"
     });
 
   } catch (err) {
 
     return res.status(500).json({
       valid: false,
-      message: "Erreur serveur"
+      message:
+        "Erreur serveur. Réessaie dans quelques instants."
     });
   }
 };
