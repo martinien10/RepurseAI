@@ -330,7 +330,7 @@ details p{font-size:9px;color:#555;line-height:1.65;margin-top:9px}
         <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px"><span style="font-size:13px;flex-shrink:0">📧</span><span style="font-size:9px;color:#777;line-height:1.5">Tu reçois un code unique par Gmail automatiquement</span></div>
         <div style="display:flex;align-items:flex-start;gap:8px"><span style="font-size:13px;flex-shrink:0">🔓</span><span style="font-size:9px;color:#777;line-height:1.5">Tu entres le code ici → accès Pro débloqué</span></div>
       </div>
-      <input id="code-input" class="code-input" placeholder="EX : REPURSE2026" oninput="this.value=this.value.toUpperCase();clearLoginError()" onkeydown="if(event.key==='Enter')verifyCode()"/>
+      <input id="code-input" class="code-input" placeholder="EX : REPURSE2026" oninput="this.value=this.value.toUpperCase();clearFormError()" onkeydown="if(event.key==='Enter')verifyCode()"/>
       <div id="login-error" style="display:none" class="error-box"></div>
       <div id="login-ok" style="display:none" class="ok-box">✅ Code valide ! Redirection…</div>
       <button id="verify-btn" class="btn-main" onclick="verifyCode()" style="width:100%;margin-bottom:14px">🚀 Valider mon code</button>
@@ -521,7 +521,7 @@ async function verifyCode() {
   const code = document.getElementById('code-input').value.trim();
 
   if (!code) {
-    showLoginError('Entre ton code.');
+    showFormError('Entre ton code.');
     return;
   }
 
@@ -530,7 +530,7 @@ async function verifyCode() {
   btn.textContent = 'Vérification…';
   btn.disabled = true;
 
-  clearLoginError();
+  clearFormError();
 
   document.getElementById('login-ok').style.display = 'none';
 
@@ -560,14 +560,14 @@ async function verifyCode() {
     } else {
 
       // CODE INCORRECT
-      showLoginError(data.message || 'Code invalide.');
+      showFormError(data.message || 'Code invalide.');
 
     }
 
   } catch (err) {
 
     // VRAIE erreur serveur
-    showLoginError('Serveur indisponible.');
+    showFormError('Serveur indisponible.');
 
   }
 
