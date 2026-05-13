@@ -142,7 +142,7 @@ module.exports = (req, res) => {
     }
 
     // ─────────────────────────────
-    // VALID CODE
+    // VALIDATION CODE
     // ─────────────────────────────
 
     const valid =
@@ -153,12 +153,12 @@ module.exports = (req, res) => {
       return res.status(401).json({
         valid: false,
         message:
-          "🔒 Code Pro invalide."
+          "🔒 Ce code Pro est invalide."
       });
     }
 
     // ─────────────────────────────
-    // INITIALISE CODE
+    // INITIALISE
     // ─────────────────────────────
 
     if (!CODE_DEVICES[code]) {
