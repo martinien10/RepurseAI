@@ -1,69 +1,16 @@
 // api/verify-code.js
 
-let VALID_CODES = [
+const VALID_CODES = [
 
   "REPURSE-A1B2C",
   "REPURSE-D3E4F",
   "REPURSE-G5H6I",
   "REPURSE-J7K8L",
-  "REPURSE-M9N0O",
+  "REPURSE-M9N0O"
 
-  "REPURSE-P1Q2R",
-  "REPURSE-S3T4U",
-  "REPURSE-V5W6X",
-  "REPURSE-Y7Z8A",
-  "REPURSE-B9C0D",
-
-  "REPURSE-E1F2G",
-  "REPURSE-H3I4J",
-  "REPURSE-K5L6M",
-  "REPURSE-N7O8P",
-  "REPURSE-Q9R0S",
-
-  "REPURSE-T1U2V",
-  "REPURSE-W3X4Y",
-  "REPURSE-Z5A6B",
-  "REPURSE-C7D8E",
-  "REPURSE-F9G0H",
-
-  "REPURSE-I1J2K",
-  "REPURSE-L3M4N",
-  "REPURSE-O5P6Q",
-  "REPURSE-R7S8T",
-  "REPURSE-U9V0W",
-
-  "REPURSE-X1Y2Z",
-  "REPURSE-A3B4C",
-  "REPURSE-D5E6F",
-  "REPURSE-G7H8I",
-  "REPURSE-J9K0L",
-
-  "REPURSE-M1N2O",
-  "REPURSE-P3Q4R",
-  "REPURSE-S5T6U",
-  "REPURSE-V7W8X",
-  "REPURSE-Y9Z0A",
-
-  "REPURSE-B1C2D",
-  "REPURSE-E3F4G",
-  "REPURSE-H5I6J",
-  "REPURSE-K7L8M",
-  "REPURSE-N9O0P",
-
-  "REPURSE-Q1R2S",
-  "REPURSE-T3U4V",
-  "REPURSE-W5X6Y",
-  "REPURSE-Z7A8B",
-  "REPURSE-C9D0E",
-
-  "REPURSE-F1G2H",
-  "REPURSE-I3J4K",
-  "REPURSE-L5M6N",
-  "REPURSE-O7P8Q",
-  "REPURSE-R9S0T"
 ];
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
 
   res.setHeader(
     "Access-Control-Allow-Origin",
@@ -114,18 +61,9 @@ module.exports = (req, res) => {
 
       return res.status(401).json({
         valid: false,
-        message:
-          "Code invalide ou déjà utilisé"
+        message: "Code invalide"
       });
     }
-
-    // ─────────────────────────────
-    // SUPPRIME LE CODE APRÈS USAGE
-    // ─────────────────────────────
-
-    VALID_CODES = VALID_CODES.filter(
-      c => c !== code
-    );
 
     return res.status(200).json({
       valid: true,
