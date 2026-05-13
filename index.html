@@ -518,34 +518,60 @@ function updateCharCount(){
 
 async function verifyCode() {
 
-  const code = document.getElementById('code-input').value.trim();
+  const code =
+    document.getElementById(
+      'code-input'
+    ).value.trim();
 
   if (!code) {
-    showFormError('Entre ton code.');
+
+    showFormError(
+      'Entre ton code.'
+    );
+
     return;
   }
 
-  const btn = document.getElementById('verify-btn');
+  const btn =
+    document.getElementById(
+      'verify-btn'
+    );
 
-  btn.textContent = 'Vérification…';
+  btn.textContent =
+    'Vérification…';
+
   btn.disabled = true;
 
   clearFormError();
 
-  document.getElementById('login-ok').style.display = 'none';
+  document.getElementById(
+    'login-ok'
+  ).style.display = 'none';
 
   try {
 
-    const res = await fetch('/api/verify-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ code })
-    });
+    const res = await fetch(
+      '/api/verify-code',
+      {
+        method: 'POST',
 
-    const data = await res.json();
-if (!res.ok || !data.valid) {
+        headers: {
+          'Content-Type':
+            'application/json'
+        },
+
+        body: JSON.stringify({
+          code
+        })
+      }
+    );
+
+    const data =
+      await res.json();
+
+    // CODE INVALIDE
+
+    if (!res.ok || !data.valid) {
 
       showFormError(
         data.message ||
