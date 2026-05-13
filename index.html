@@ -546,30 +546,59 @@ async function verifyCode() {
 
     const data = await res.json();
 
-    // CODE VALIDE
-    if (data.valid) {
+    if (!res.ok || !data.valid) {
 
-      document.getElementById('login-ok').style.display = 'block';
+      showFormError(
+        data.message ||
+        'Code invalide.'
+      );
 
-      setTimeout(() => {
-        isPro = true;
-        updateProUI();
-        showPage('app');
-      }, 1200);
+      btn.textContent =
+        'Débloquer le mode Pro';
 
-    } else {
+      btn.disabled = false;
 
-      // CODE INCORRECT
-      showFormError(data.message || 'Code invalide.');
-
+      return;
     }
+
+    // CODE VALIDE
+
+    document.getElementById(
+      'login-ok'
+    ).style.display = 'block';
+
+    document.getElementById(
+      'login-ok'
+    ).textContent =
+      '🚀 Accès Pro activé avec succès !';
+
+    setTimeout(() => {
+
+      isPro = true;
+
+      localStorage.setItem(
+        'repurse_pro',
+        'true'
+      );
+
+      updateProUI();
+
+      showPage('app');
+
+    }, 1200);
 
   } catch (err) {
 
-    // VRAIE erreur serveur
-    showFormError('Serveur indisponible.');
+    showFormError(
+      'Serveur indisponible.'
+    );
 
+    btn.textContent =
+      'Débloquer le mode Pro';
+
+    btn.disabled = false;
   }
+}
 
   btn.textContent = '🚀 Valider mon code';
   btn.disabled = false;
