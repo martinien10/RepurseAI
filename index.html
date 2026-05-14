@@ -843,111 +843,240 @@ function stopProgress(){
 
   document.getElementById('progress-fill').style.width='100%';
 }
-
 function showResults(){
 
   stopProgress();
 
-  document.getElementById('form-section').style.display='none';
+  document.getElementById(
+    'form-section'
+  ).style.display='none';
 
-  document.getElementById('results-section').style.display='block';
+  document.getElementById(
+    'results-section'
+  ).style.display='block';
 
   const avail = isPro
     ? PLATFORMS
-    : PLATFORMS.filter(p => p.free);
+    : PLATFORMS.filter(
+        p => p.free
+      );
 
-  document.getElementById('result-title').textContent =
+  document.getElementById(
+    'result-title'
+  ).textContent =
     (isPro ? '10' : '2') +
     ' contenus générés ! Copie et publie.';
 
-  // Onglets
+  // ─────────────────────
+  // TABS
+  // ─────────────────────
+
   let tabs = avail.map(p => `
     <button
       class="tab-btn${p.id===currentTab?' active':''}"
       onclick="switchTab('${p.id}')"
       id="tab-${p.id}"
-      style="${p.id===currentTab?'background:'+p.grad:''}"
+      style="
+        ${p.id===currentTab?'background:'+p.grad:''}
+      "
     >
       ${p.emoji} ${p.name}
     </button>
   `).join('');
 
   if(!isPro){
+
     tabs += `
       <a
         href="${CHECKOUT}"
         target="_blank"
-        style="padding:5px 9px;border:1px dashed rgba(124,58,237,.4);border-radius:8px;color:#7c3aed;font-size:9px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center"
+        style="
+          padding:5px 9px;
+          border:1px dashed rgba(124,58,237,.4);
+          border-radius:8px;
+          color:#7c3aed;
+          font-size:9px;
+          font-weight:600;
+          text-decoration:none;
+          display:inline-flex;
+          align-items:center
+        "
       >
         🔒 +8 Pro
       </a>
     `;
   }
 
-  document.getElementById('result-tabs').innerHTML = tabs;
+  document.getElementById(
+    'result-tabs'
+  ).innerHTML = tabs;
 
   if(!isPro){
-    document.getElementById('upsell-bar').style.display='flex';
+
+    document.getElementById(
+      'upsell-bar'
+    ).style.display='flex';
   }
 
-  switchTab('linkedin');
+  // ─────────────────────
+  // PREMIER ONGLET
+  // ─────────────────────
+
+  switchTab(avail[0].id);
 }
 
 function switchTab(id){
 
   currentTab = id;
 
-  const p = PLATFORMS.find(x => x.id === id);
+  const p =
+    PLATFORMS.find(
+      x => x.id === id
+    );
 
-  if(!p || !currentResults || !currentResults[id]) return;
+  if(
+    !p ||
+    !currentResults ||
+    !currentResults[id]
+  ) return;
 
-  // Tabs
-  document.querySelectorAll('.tab-btn').forEach(b => {
-    b.classList.remove('active');
-    b.style.background='#0e0e18';
-  });
+  // ─────────────────────
+  // TABS
+  // ─────────────────────
 
-  const activeBtn = document.getElementById('tab-'+id);
+  document
+    .querySelectorAll('.tab-btn')
+    .forEach(b => {
+
+      b.classList.remove(
+        'active'
+      );
+
+      b.style.background =
+        '#0e0e18';
+    });
+
+  const activeBtn =
+    document.getElementById(
+      'tab-'+id
+    );
 
   if(activeBtn){
-    activeBtn.classList.add('active');
-    activeBtn.style.background = p.grad;
+
+    activeBtn.classList.add(
+      'active'
+    );
+
+    activeBtn.style.background =
+      p.grad;
   }
 
-  // Carte résultat
-  document.getElementById('result-stripe').style.background = p.grad;
+  // ─────────────────────
+  // CARTE
+  // ─────────────────────
 
-  document.getElementById('result-header').innerHTML = `
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="width:28px;height:28px;border-radius:8px;background:${p.grad};display:flex;align-items:center;justify-content:center;font-size:13px">
+  document.getElementById(
+    'result-stripe'
+  ).style.background = p.grad;
+
+  document.getElementById(
+    'result-header'
+  ).innerHTML = `
+
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:8px
+      "
+    >
+
+      <div
+        style="
+          width:34px;
+          height:34px;
+          border-radius:10px;
+          background:${p.grad};
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:15px
+        "
+      >
         ${p.emoji}
       </div>
 
       <div>
-        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#fff">
+
+        <div
+          style="
+            font-family:'Syne',sans-serif;
+            font-weight:700;
+            font-size:13px;
+            color:#fff
+          "
+        >
           ${p.name}
         </div>
 
-        <div style="font-size:8px;color:#3a3a5a">
-          ${p.name}
+        <div
+          style="
+            font-size:10px;
+            color:#57577d
+          "
+        >
+          Optimisé pour ${p.name}
         </div>
+
       </div>
+
     </div>
 
     <button
       onclick="copyResult('${id}')"
       id="copy-btn-${id}"
-      style="padding:5px 11px;background:${p.grad};color:#fff;border:none;border-radius:7px;font-size:9px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif"
+      style="
+        padding:7px 13px;
+        background:${p.grad};
+        color:#fff;
+        border:none;
+        border-radius:9px;
+        font-size:10px;
+        font-weight:700;
+        cursor:pointer;
+        font-family:'DM Sans',sans-serif
+      "
     >
       📋 Copier
     </button>
   `;
 
-  document.getElementById('result-content').textContent =
+  // ─────────────────────
+  // CONTENU
+  // ─────────────────────
+
+  document.getElementById(
+    'result-content'
+  ).textContent =
     currentResults[id];
 
-  document.getElementById('result-chars').textContent =
-    currentResults[id].length + ' car.';
+  document.getElementById(
+    'result-content'
+  ).style.minHeight = '420px';
+
+  document.getElementById(
+    'result-content'
+  ).style.fontSize = '15px';
+
+  document.getElementById(
+    'result-content'
+  ).style.lineHeight = '1.8';
+
+  document.getElementById(
+    'result-chars'
+  ).textContent =
+    currentResults[id].length +
+    ' car.';
 }
 
 function copyResult(id){
