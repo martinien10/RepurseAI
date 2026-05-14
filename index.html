@@ -1400,6 +1400,11 @@ window.addEventListener(
     document.getElementById(
       'edit-prompt'
     ).value.trim();
+    // VIDE INPUT
+
+document.getElementById(
+  'edit-prompt'
+).value = '';
 
   if(!edit){
 
@@ -1412,7 +1417,30 @@ window.addEventListener(
 
   const current =
     currentResults[currentTab];
+// ─────────────────────
+// LOADING IA
+// ─────────────────────
 
+document.getElementById(
+  'result-content'
+).innerHTML = `
+  <div
+    style="
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#a78bfa;
+      font-size:13px;
+      padding:14px 0
+    "
+  >
+    <span class="spinner"></span>
+
+    <span>
+      RepurseAI réfléchit et améliore ton contenu...
+    </span>
+  </div>
+`;
   try {
 const res = await fetch(
   '/api/generate',
