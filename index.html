@@ -591,9 +591,15 @@ const PLATFORMS = [
 ];
 
 // ─── ÉTAT APP ──────────────────────────────────────────────────────────
-let isPro = false;
+let isPro =
+  localStorage.getItem(
+    'repurse_pro'
+  ) === 'true';
+
 let freeUsed = false;
+
 let currentResults = null;
+
 let currentTab = "linkedin";
 
 // ─── NAVIGATION ────────────────────────────────────────────────────────
@@ -1338,7 +1344,22 @@ initTicker();
 renderPlatformsLanding();
 renderPlatformsTool();
 runDemo();
+// ─────────────────────
+// RESTORE PRO SESSION
+// ─────────────────────
 
+window.addEventListener(
+  'load',
+  () => {
+
+    if(isPro){
+
+      updateProUI();
+
+      showPage('app');
+    }
+  }
+);
 </script>
 </body>
 </html>
