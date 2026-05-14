@@ -1454,7 +1454,20 @@ const res = await fetch(
 
     body: JSON.stringify({
 
-      text: edit,
+      text: `
+CONTENU ACTUEL :
+
+${current}
+
+DEMANDE UTILISATEUR :
+
+${edit}
+
+IMPORTANT :
+Réponds UNIQUEMENT en améliorant le contenu  selon la demande.
+  Tu peux changer de sujet si l'utulisateur demande.
+Garde la même plateforme.
+`,
 
       isPro
     })
