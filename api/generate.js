@@ -59,7 +59,7 @@ Transforme cette idée :
 
 "${text}"
 
-en contenus modernes, humains, longs, engageants et détaillés.
+en contenus modernes, humains, engageants et détaillés.
 
 RÈGLES :
 - Chaque plateforme doit avoir un style différent
