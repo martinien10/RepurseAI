@@ -59,7 +59,7 @@ Transforme cette idée :
 
 "${text}"
 
-en contenus modernes, humains, engageants et détaillés.
+en contenus modernes, humains, viraux, longs, engageants et détaillés.
 
 RÈGLES :
 - Chaque plateforme doit avoir un style différent
@@ -106,8 +106,7 @@ FORMAT JSON OBLIGATOIRE :
 
         body: JSON.stringify({
 
-          model: "llama3-70b-8192",
-
+         model: "llama-3.3-70b-versatile",
           messages: [
             {
               role: "user",
