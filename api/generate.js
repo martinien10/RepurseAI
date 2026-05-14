@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     const isPro = req.body?.isPro || false;
 
     if (!text || text.trim().length < 5) {
+
       return res.status(400).json({
         error: "Texte trop court"
       });
@@ -41,6 +42,7 @@ export default async function handler(req, res) {
     const apiKey = process.env.GROQ_API_KEY;
 
     if (!apiKey) {
+
       return res.status(500).json({
         error: "GROQ_API_KEY manquant"
       });
@@ -57,7 +59,7 @@ Transforme cette idée :
 
 "${text}"
 
-en contenus modernes, humains, engageants et détaillés.
+en contenus modernes, humains, viraux, longs, engageants et détaillés.
 
 RÈGLES :
 - Chaque plateforme doit avoir un style différent
@@ -67,6 +69,10 @@ RÈGLES :
 - Naturel et humain
 - Éviter les répétitions
 - Ajouter hashtags quand utile
+
+IMPORTANT :
+Réponds UNIQUEMENT en JSON valide.
+Aucun texte avant ou après le JSON.
 
 FORMAT JSON OBLIGATOIRE :
 
@@ -92,18 +98,23 @@ FORMAT JSON OBLIGATOIRE :
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
+
         headers: {
           Authorization: "Bearer " + apiKey,
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+
+          model: "llama3-70b-8192",
+
           messages: [
             {
               role: "user",
               content: prompt
             }
           ],
+
           temperature: 0.9,
           max_tokens: 1800
         })
@@ -135,6 +146,10 @@ FORMAT JSON OBLIGATOIRE :
       .replace(/```/g, "")
       .trim();
 
+    // ─────────────────────────────────────────────
+    // PARSE JSON
+    // ─────────────────────────────────────────────
+
     let parsed;
 
     try {
@@ -143,18 +158,10 @@ FORMAT JSON OBLIGATOIRE :
 
     } catch {
 
-      parsed = {
-        linkedin: cleaned,
-        instagram: cleaned,
-        twitter: cleaned,
-        facebook: cleaned,
-        youtube: cleaned,
-        tiktok: cleaned,
-        pinterest: cleaned,
-        threads: cleaned,
-        newsletter: cleaned,
-        whatsapp: cleaned
-      };
+      return res.status(500).json({
+        error:
+          "Format IA invalide. Réessaie."
+      });
     }
 
     // ─────────────────────────────────────────────
