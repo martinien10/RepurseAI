@@ -1414,40 +1414,49 @@ window.addEventListener(
     currentResults[currentTab];
 
   try {
+const res = await fetch(
+  '/api/generate',
+  {
+    method:'POST',
 
-    const res = await fetch(
-      '/api/generate',
-      {
-        method:'POST',
+    headers:{
+      'Content-Type':
+        'application/json'
+    },
 
-        headers:{
-          'Content-Type':
-            'application/json'
-        },
+    body: JSON.stringify({
 
-        body:JSON.stringify({
+      text: `
+CONTENU ACTUEL :
 
-          text:
-            current +
-            '\n\nMODIFICATION:\n' +
-            edit,
+${current}
 
-          isPro
-        })
-      }
-    );
+DEMANDE UTILISATEUR :
 
-    const data =
-      await res.json();
+${edit}
 
-    if(!data.content){
+IMPORTANT :
+Réponds UNIQUEMENT en améliorant le contenu actuel selon la demande.
+Ne change pas de sujet.
+Garde la même plateforme.
+`,
 
-      showFormError(
-        'Erreur IA.'
-      );
+      isPro
+    })
+  }
+);
 
-      return;
-    }
+const data =
+  await res.json();
+
+if(!data.content){
+
+  showFormError(
+    'Erreur IA.'
+  );
+
+  return;
+}
 
     currentResults[currentTab] =
       data.content[currentTab];
