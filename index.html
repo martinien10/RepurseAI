@@ -123,6 +123,75 @@ nav{position:sticky;top:0;z-index:100;padding:9px 16px;display:flex;align-items:
       0 0 35px rgba(236,72,153,.55);
   }
 }
+ .pro-stats{
+
+  display:flex;
+
+  gap:12px;
+
+  justify-content:center;
+
+  align-items:center;
+
+  flex-wrap:wrap;
+
+  margin-top:20px;
+}
+
+.pro-stat{
+
+  min-width:110px;
+
+  padding:14px 16px;
+
+  border-radius:18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(124,58,237,.18),
+      rgba(236,72,153,.12)
+    );
+
+  border:1px solid rgba(255,255,255,.08);
+
+  backdrop-filter:blur(16px);
+
+  text-align:center;
+
+  box-shadow:
+    0 0 18px rgba(124,58,237,.18);
+
+  transition:.25s;
+}
+
+.pro-stat:hover{
+
+  transform:translateY(-4px);
+
+  box-shadow:
+    0 0 30px rgba(236,72,153,.28);
+}
+
+.pro-stat-number{
+
+  font-size:22px;
+
+  font-weight:900;
+
+  color:#fff;
+
+  font-family:'Syne',sans-serif;
+}
+
+.pro-stat-label{
+
+  margin-top:5px;
+
+  font-size:11px;
+
+  color:#d6d6f5;
+} 
 .plat-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
 .plat-name{font-size:8px;font-weight:700;text-align:center}
 
