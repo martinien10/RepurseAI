@@ -68,7 +68,61 @@ nav{position:sticky;top:0;z-index:100;padding:9px 16px;display:flex;align-items:
 .plat-pill{flex:0 0 auto;border-radius:11px;padding:9px 7px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:58px;position:relative}
 .plat-pill.free{background:#14142a;border:1px solid #2a2a40}
 .plat-pill.locked{background:#0e0e18;border:1px solid #181828;opacity:.6}
-.pro-badge{position:absolute;top:3px;right:3px;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:5px;padding:1px 4px;font-size:6px;font-weight:800;color:#fff}
+.pro-badge{
+
+  position:absolute;
+
+  top:5px;
+  right:5px;
+
+  padding:3px 7px;
+
+  border-radius:999px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7c3aed,
+      #ec4899,
+      #f97316
+    );
+
+  color:#fff;
+
+  font-size:7px;
+  font-weight:900;
+
+  letter-spacing:.4px;
+
+  box-shadow:
+    0 0 12px rgba(124,58,237,.6),
+    0 0 22px rgba(236,72,153,.35);
+
+  animation:proBadgeGlow 2s ease infinite;
+
+  backdrop-filter:blur(8px);
+}
+
+@keyframes proBadgeGlow{
+
+  0%,100%{
+
+    transform:scale(1);
+
+    box-shadow:
+      0 0 12px rgba(124,58,237,.6),
+      0 0 22px rgba(236,72,153,.35);
+  }
+
+  50%{
+
+    transform:scale(1.08);
+
+    box-shadow:
+      0 0 18px rgba(124,58,237,.9),
+      0 0 35px rgba(236,72,153,.55);
+  }
+}
 .plat-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
 .plat-name{font-size:8px;font-weight:700;text-align:center}
 
@@ -625,7 +679,7 @@ details p{font-size:9px;color:#555;line-height:1.65;margin-top:9px}
 
 <script>
 // ─── CONFIG ────────────────────────────────────────────────────────────
-const CHECKOUT = "https://repurseai1.lemonsqueezy.com/checkout/buy/4e0a8229-3e6f-4e11-af72-b3be249d1e82";
+const CHECKOUT = "https://repurseai1.lemonsqueezy.com/checkout/buy/9ef644c0-5799-4a77-8d96-0c6598c06cd4";
 
 const PLATFORMS = [
   {id:"linkedin",  name:"LinkedIn",   grad:"linear-gradient(135deg,#0A66C2,#0d8bd9)", emoji:"💼", free:true},
@@ -862,16 +916,115 @@ function updateProUI() {
 
   if (isPro) {
 
-    document.getElementById('pro-indicator').innerHTML =
-      '<span class="pro-chip">⭐ PRO</span>';
+    // MODE PRO BODY
 
-    document.getElementById('free-banner').style.display = 'none';
+    document.body.classList.add(
+      'pro-mode'
+    );
 
-    document.getElementById('gen-btn').textContent =
-      '⚡ Générer × 10 plateformes';
+    // BADGE PREMIUM
 
-    document.getElementById('upsell-bar').style.display = 'none';
+    document.getElementById(
+      'pro-indicator'
+    ).innerHTML = `
+
+      <div class="pro-ultra-badge">
+        👑 REPURSEAI PRO
+      </div>
+
+    `;
+
+    // CACHE BANNIÈRE FREE
+
+    document.getElementById(
+      'free-banner'
+    ).style.display = 'none';
+
+    // BOUTON PREMIUM
+
+    document.getElementById(
+      'gen-btn'
+    ).textContent =
+      '🚀 Génération IA Premium';
+
+    // CACHE UPSELL
+
+    document.getElementById(
+      'upsell-bar'
+    ).style.display = 'none';
+
+    // STYLE PREMIUM CARDS
+
+    document.querySelectorAll(
+      '.card'
+    ).forEach(card => {
+
+      card.classList.add(
+        'pro-card'
+      );
+    });
+
+    // STATS PREMIUM
+
+    const hero =
+      document.querySelector(
+        '.hero'
+      );
+
+    if (
+      hero &&
+      !document.getElementById(
+        'pro-stats'
+      )
+    ) {
+
+      hero.insertAdjacentHTML(
+        'beforeend',
+
+        `
+
+        <div
+          id="pro-stats"
+          class="pro-stats"
+        >
+
+          <div class="pro-stat">
+            <div class="pro-stat-number">
+              10×
+            </div>
+
+            <div class="pro-stat-label">
+              Productivité
+            </div>
+          </div>
+
+          <div class="pro-stat">
+            <div class="pro-stat-number">
+              24/7
+            </div>
+
+            <div class="pro-stat-label">
+              IA Premium
+            </div>
+          </div>
+
+          <div class="pro-stat">
+            <div class="pro-stat-number">
+              ∞
+            </div>
+
+            <div class="pro-stat-label">
+              Contenus
+            </div>
+          </div>
+
+        </div>
+
+        `
+      );
+    }
   }
+}
 
   renderPlatformsTool();
 }
@@ -1331,7 +1484,7 @@ function showLockWall(){
           class="btn-main"
           style="font-size:11px;border-radius:9px;padding:10px 22px"
         >
-          🚀 S'abonner — €14.99/mois
+          🚀 S'abonner — €9.99/mois
         </a>
 
       </div>
